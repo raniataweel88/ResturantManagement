@@ -13,8 +13,8 @@ namespace ResturantManagement.Controllers
     public class CustomerController : ControllerBase
     {
 
-        private readonly CustomerService _Service;
-        public CustomerController(CustomerService Service )
+        private readonly ICustomerService _Service;
+        public CustomerController(ICustomerService Service )
         {
             _Service=Service ;
         }
@@ -34,7 +34,7 @@ namespace ResturantManagement.Controllers
         /// <response code="201">Returns the new data of Customer </response>
         /// <response code="400">If the error was occured</response>     
         [HttpPost]
-       [Route("[action]")]
+         [Route("[action]")]
         public Task CreateCustomer([FromBody]CustomerDTO dto)
         {
             return (_Service.CreateCustomer(dto));

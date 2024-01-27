@@ -25,7 +25,7 @@ namespace ResturantManagement_Infra.Service
             _context = context;
         }
         #region Customer
-        public async Task CreateCustomer([FromBody]CustomerDTO dto)
+        public async Task CreateCustomer(CustomerDTO dto)
         {
             Log.Debug("Debugging Create Customer Service has been started");
             Customer c = new Customer();

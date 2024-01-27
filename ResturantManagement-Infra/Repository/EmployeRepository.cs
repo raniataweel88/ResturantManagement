@@ -27,58 +27,82 @@ namespace ResturantManagement_Infra.Repository
         {
             Log.Debug("Debugging CreateEmploye Repository has been started");
             Employe em = new Employe();
-             em.Name=e.Name;
+            try { em.Name=e.Name;
             await _context.AddAsync(em);
             await _context.SaveChangesAsync();
-            Log.Information("db query has been add new Employe Repository");
+            Log.Information("db query has been add new Employe Repository") ;}
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "can not add new Employe");
+            }
             Log.Debug("Debugging CreateEmploye been finished Repository");
         }
 
         public async Task DeleteEmploye(int Id)
         {
             Log.Debug($"Debugging DeleteEmploye Repository has been started");
-            var result = _context.Employes.FindAsync(Id);
-            if (result != null)
-            {
-                Log.Information("Employe  Is exist");
-                _context.Remove(result);
-                await _context.SaveChangesAsync();
-                Log.Information("Db Query delets the Employe Repository successfully");
-                Log.Debug($"Debugging DeleteEmploye  Repository has been finished");
+           try{ var result = _context.Employes.FindAsync(Id);
+                if (result != null)
+                {
+                    Log.Information("Employe  Is exist");
+                    _context.Remove(result);
+                    await _context.SaveChangesAsync();
+                    Log.Information("Db Query delets the Employe Repository successfully");
+                } 
             }
-            Log.Error("Employe Not Found");
+            catch (Exception ex)
+            {  Log.Error("Employe Not Found");
+                throw new Exception(ex.Message + "Employe Not Found");
+            }
+               Log.Debug($"Debugging DeleteEmploye  Repository has been finished");
+
         }
 
         public async Task<List<Employe>> GetAllEmployeAsync()
         {
-            Log.Debug("Debugging GetAllEmployeAsync Repository has been started");
-            var Employe = await _context.Employes.ToListAsync();
+            Log.Debug("Debugging GetAllEmployeeAsync Repository has been started");
+            try {   var Employe = await _context.Employes.ToListAsync();
             var result = from e in Employe
                          select new Employe
                          {
                              Name = e.Name,
                             EmployeId=e.EmployeId,
                          };
-            Log.Information("Db query has been Get All Employe Repository");
-            Log.Debug("Debugging GetAllEmployeAsync Repository has been finised");
-            return (result.ToList());
+            Log.Information("Db query has been Get All Employee Repository");       
+                return (result.ToList());}
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "the model Employee is empty");
+            }
+            Log.Debug("Debugging GetAllEmployeeAsync Repository has been finished");
+   
         }
 
         public async Task GetEmployeById(int Id)
         {
-            Log.Debug("Debugging GetEmployeById Repository has been started");
-            var result = await _context.Employes.AnyAsync(x => x.EmployeId == Id);
-            Log.Information($"Db Query has been get Employe Id Repository");
-            Log.Debug($"Debugging GetEmployeById Repository Has been Finished Successfully With CustomerId");
+                Log.Debug("Debugging GetEmployeeById Repository has been started");
+            try { 
+                var result = await _context.Employes.AnyAsync(x => x.EmployeId == Id);
+            Log.Information($"Db Query has been get Employee Id Repository"); }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "the object of model Employee is empty");
+            }
+            Log.Debug($"Debugging GetEmployeeById Repository Has been Finished Successfully With CustomerId");
         }
         public async Task UpdateEmploye(Employe e)
         {
             Log.Debug($"Debugging UpdateEmploy Repository has been started");
-            var result = await _context.Employes.FindAsync(e.EmployeId);
-            result.Name=e.Name;
+            try {     var result = await _context.Employes.FindAsync(e.EmployeId);     
+                result.Name=e.Name;
             _context.Update(result);
             await _context.SaveChangesAsync();
-            Log.Information($"Db has been updates Employ Repository");
+            Log.Information($"Db has been updates Employ Repository");}
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "the object of model Employee is empty ");
+            }
+
             Log.Debug($"Debugging UpdateEmploy Repository has been Finished"); ;
         }
         #endregion

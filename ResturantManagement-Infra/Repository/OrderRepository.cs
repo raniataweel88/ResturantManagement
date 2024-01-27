@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ResturantManagement_Infra.Repository
 {
@@ -28,52 +29,75 @@ namespace ResturantManagement_Infra.Repository
         {
             Log.Debug("Debugging Create Order Repository has been started");
             Order or = new Order();
-            or.TotalPrice = 0;
+            try {     or.TotalPrice = 0;
             await _context.AddAsync(or);
             await _context.SaveChangesAsync();
-            Log.Information("db query has been add new order Repository");
+            Log.Information("db query has been add new order Repository"); }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "Db Query has not been add new order");
+            }
             Log.Debug("Debugging Create Order Repository has been finished");
         }
 
         public async Task DeleteOrder(int Id)
         {
             Log.Debug($"Debugging DeleteOrder Repository has been started");
-            var result = _context.OrderItems.FindAsync(Id);
-            if (result != null)
-            {
-                Log.Information("Order Is exist");
-                _context.Remove(result);
-                await _context.SaveChangesAsync();
-                Log.Information("Db Query deletes Repository the item of Order successfully");
-                Log.Debug($"Debugging DeleteOrder Repository has been finished");
+            try { var result = _context.OrderItems.FindAsync(Id);
+                if (result != null)
+                {
+                    Log.Information("Order Is exist");
+                    _context.Remove(result);
+                    await _context.SaveChangesAsync();
+                    Log.Information("Db Query deletes Repository the item of Order successfully");
+                }
             }
-            Log.Error("Order Not Found");
+            catch (Exception ex) {
+                Log.Error("Order Not Found");
+                throw new Exception(ex.Message + "Order Not Found");
+            }
+               
+            Log.Debug($"Debugging DeleteOrder Repository has been finished");
         }
 
         public async Task<List<Order>> GetAllOrderAsync()
         {
             Log.Debug("Debugging GetAllOrderAsync Repository has been started");
-            var Order = await _context.Orders.ToListAsync();
+            try { var Order = await _context.Orders.ToListAsync();
             var result = from o in Order
                          select new Order
                          {
                              TotalPrice = o.TotalPrice,
                              OrderId = o.OrderId,
                          };
-            Log.Information("Db query has been Get All Order Repository");
+            Log.Information("Db query has been Get All Order Repository");  
+                return (result.ToList());}
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "Db Query donot  have objects of model Order");
+            }
             Log.Debug("Debugging GetAllOrderAsync has been finished Repository");
-            return (result.ToList());
+      
         }
         public async Task GetOrderById(int Id)
         {
             Log.Debug("Debugging GetOrderById Repository has been started ");
-            var result = await _context.Orders.AnyAsync(x => x.OrderId == Id);
+            try
+            {
+             var result = await _context.Orders.AnyAsync(x => x.OrderId == Id);
             Log.Information($"Db Query has been get Order Id Repository");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "Db Query does not  have object of model Order");
+            }
             Log.Debug($"Debugging GetOrderItemById Repository Has been Finished Successfully With OrderId");
         }
         public async Task UpdateOrder(Order o)
         {
             Log.Debug($"Debugging UpdateOrder Repository has been started");
+            try
+            {
             var result = await _context.Orders.FindAsync(o.OrderId);
             var OrderItems = await _context.OrderItems.FindAsync(o.OrderId);
             var Menu = await _context.Menus.FindAsync(o.OrderId);
@@ -89,6 +113,11 @@ namespace ResturantManagement_Infra.Repository
             }
             await _context.SaveChangesAsync();
             Log.Information($"Db has been updates Order Repository");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "Db does not has been updates Order Repository");
+            }
             Log.Debug($"Debugging OrderItem Repository has been Finished"); ;
         }
         #endregion
