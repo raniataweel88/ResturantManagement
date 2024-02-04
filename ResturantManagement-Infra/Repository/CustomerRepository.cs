@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ResturantManagement_Core.DTO;
 using ResturantManagement_Core.EntityFramework.Context;
@@ -26,9 +27,11 @@ namespace ResturantManagement_Infra.Repository
         #region Customer
         public async Task CreateCustomer(Customer c)
         {
+    
             Log.Debug("Debugging Create Customer Repository has been started");
             Customer cs = new Customer();
-            try {  cs.Email= c.Email;
+            try {  
+            cs.Email= c.Email;
             cs.Name = c.Name;
             cs.Phone = c.Phone;
             await _context.AddAsync(cs);
@@ -87,17 +90,24 @@ namespace ResturantManagement_Infra.Repository
 
         }
 
-        public async Task GetCustomerById(int Id)
+        public async Task<Customer> GetCustomerById(int Id)
         {
-            Log.Debug("Debugging GetCustomerById Repository has been started");
-            try {  var result = await _context.Customers.AnyAsync(x => x.CustomerId == Id);
-            Log.Information($"Db Query has been get Customers Id");}
+            try
+            {
+                Log.Debug("Debugging GetCustomerById Service has been started");
+                return await _context.Customers.FindAsync(Id);
+                Log.Information($"Db Query has been get Customers Id Service");
+            }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message + "Db Query does not has been get Customers Id");
+                throw new Exception(ex.Message);
             }
-            Log.Debug($"Debugging GetCustomerById Repository Has been Finished Successfully With CustomerId ");
+
+
+            Log.Debug($"Debugging GetCustomerById Service Has been Finished Successfully With CustomerId");
+
         }
+    
         public async Task UpdateCustomer(Customer c)
         {
             Log.Debug($"Debugging UpdateCustomere Repository has been started");
@@ -109,7 +119,8 @@ namespace ResturantManagement_Infra.Repository
             _context.Update(result);
             await _context.SaveChangesAsync();
             Log.Information($"Db has been updates customer Repository"); }
-             catch (Exception ex) {
+             catch (Exception ex) 
+            {
                 throw new Exception(ex.Message + "Db query the object of model Customers is empty");
             }
             Log.Debug($"Debugging Update Customer Repository has been Finished"); ;

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ResturantManagement_Core.DTO;
@@ -10,6 +12,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,32 +30,43 @@ namespace ResturantManagement_Infra.Service
         #region Customer
         public async Task CreateCustomer(CustomerDTO dto)
         {
-            Log.Debug("Debugging Create Customer Service has been started");
-            Customer c = new Customer();
-            c.Name = dto.Name;
-            c.Phone = dto.Phone;
-            c.Email = dto.Email;
-            await _context.AddAsync(c);
-            await _context.SaveChangesAsync();
-            Log.Information("db query has been add new customer Service");
+            try
+            {
+                Log.Debug("Debugging Create Customer Service has been started");
+                Customer c = new Customer();
+                c.Name = dto.Name;
+                c.Phone = dto.Phone;
+                c.Email = dto.Email;
+                c.Password = dto.Password;
+                await _context.AddAsync(c);
+                await _context.SaveChangesAsync();
+                Log.Information("db query has been add new customer Service");
+            }
+            catch (Exception ex) {
+                throw new Exception(ex.Message);
+            }
             Log.Debug("Debugging Create Customer Service been finished");
         }
-
         public async Task DeleteCustomer(int Id)
-        {
-            Log.Debug($"Debugging DeleteCustomer Service has been started");
-            var result = _context.Customers.FindAsync(Id);
-            if (result != null)
+        { Log.Debug($"Debugging DeleteCustomer Service has been started");
+            try {
+                var result = await _context.Customers.FindAsync(Id);
+                if (result != null)
+                {
+                    Log.Information("Customer Is exist");
+                    _context.Remove(result);
+                    await _context.SaveChangesAsync();
+                    Log.Information("Db Query deletes the customer Service successfully");
+                    Log.Debug($"Debugging DeleteCustomer Service has been finished");
+                }
+
+            }
+            catch (Exception ex)
             {
-                Log.Information("Customer Is exist");
-                _context.Remove(result);
-                await _context.SaveChangesAsync();
-                Log.Information("Db Query deletes the customer Service successfully");
-                Log.Debug($"Debugging DeleteCustomer Service has been finished");
+                throw new Exception(ex.Message);
             }
             Log.Error("Question Type Not Found");
         }
-
         public async Task<List<CustomerDTO>> GetAllCustomerAsync()
         {
             Log.Debug("Debugging GetAllCustomerAsync Service has been started");
@@ -69,25 +83,63 @@ namespace ResturantManagement_Infra.Service
             return (result.ToList());
         }
 
-        public async Task GetCustomerById(int Id)
+        public async Task<CustomerDTO> GetCustomerByIdAsync(int Id)
         {
-            Log.Debug("Debugging GetCustomerById Service has been started");
-            var result = await _context.Customers.AnyAsync(x => x.CustomerId == Id);
-            Log.Information($"Db Query has been get Customers Id Service");
+            try
+            {
+                var result = await _context.Customers.FindAsync(Id);
+                if (result != null)
+                {
+                    CustomerDTO CustomerDTO = new CustomerDTO()
+                    {
+                        Name = result.Name,
+                        Email = result.Email,
+                        Phone = result.Phone,
+                    };
+                    Log.Information($"Db Query has been get customer Id Service");
+                    return CustomerDTO;
+                }
+                else
+                    return null;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("can not get customer by id");
+            }
             Log.Debug($"Debugging GetCustomerById Service Has been Finished Successfully With CustomerId");
         }
+    
         public async Task UpdateCustomer(CustomerDTO dto)
+        
         {
-            Log.Debug($"Debugging UpdateCustomere Service has been started Service");
-            var result = await _context.Customers.FindAsync(dto.CustomerId);
-            result.Name = dto.Name;
-            result.Phone = dto.Phone;
-            result.Email = dto.Email;
-            _context.Update(result);
-            await _context.SaveChangesAsync();
-            Log.Information($"Db has been updates Service");
+            try
+            {
+                Log.Debug($"Debugging UpdateCustomere Service has been started Service");
+                var result = await _context.Customers.FindAsync(dto.CustomerId);
+                if (result != null)
+                {
+                    result.CustomerId = dto.CustomerId;
+                    result.Name = dto.Name;
+                    result.Phone = dto.Phone;
+                    result.Email = dto.Email;
+                    _context.Update(result);
+                    await _context.SaveChangesAsync();
+                    Log.Information($"Db has been updates Service");
+                }
+                else
+                {
+
+                    throw new Exception("the customer is null");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("cannot get customer by id");
+            }
             Log.Debug($"Debugging UpdateCustomere Service has been Finished"); ;
-        }
+            }
+        
+        
 
         #endregion
 

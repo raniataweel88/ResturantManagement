@@ -11,7 +11,7 @@ namespace ResturantManagement_Core.IRepository
     public interface ICustomerRepository
     {
         Task<List<Customer>> GetAllCustomerAsync();
-        Task GetCustomerById(int Id);
+        Task<Customer> GetCustomerById(int Id);
         Task CreateCustomer(Customer c);
         Task UpdateCustomer(Customer c);
         Task DeleteCustomer(int Id);

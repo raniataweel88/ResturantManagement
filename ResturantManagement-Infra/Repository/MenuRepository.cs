@@ -89,16 +89,16 @@ namespace ResturantManagement_Infra.Repository
             
         }  
       
-        public async Task GetMenuById(int Id)
+        public async Task<Menu> GetMenuById(int Id)
         {
                 Log.Debug("Debugging GetMenuById Repository has been started");
-            try {  var result = await _context.Menus.AnyAsync(x => x.MenuId==Id);
-                Log.Information($"Db Query has been get Menu Id Repository");}
+            try {  var result = await _context.Menus.FindAsync(Id);
+                Log.Information($"Db Query has been get Menu Id Repository"); 
+                return result;}
             catch (Exception ex)
             {
                 throw new Exception(ex.Message + "Db Query does not has been get Menu Id");
-            }
-            Log.Debug($"Debugging GetMenuById Repository Has been Finished Successfully With MenuId");
+            }     
         }
 
         public async Task UpdateMenu(Menu m)

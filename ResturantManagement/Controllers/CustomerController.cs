@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Azure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ResturantManagement_Core.DTO;
+using ResturantManagement_Core.EntityFramework.Context;
 using ResturantManagement_Core.EntityFramework.Models;
 using ResturantManagement_Core.IService;
 using ResturantManagement_Infra.Service;
-using ResturantManagement_Infra.Service;
+using Serilog;
 
 namespace ResturantManagement.Controllers
 {
@@ -12,45 +15,43 @@ namespace ResturantManagement.Controllers
     [ApiController]
     public class CustomerController : ControllerBase
     {
-
+        private readonly RestrantDbContext _context;
         private readonly ICustomerService _Service;
-        public CustomerController(ICustomerService Service )
+        public CustomerController(ICustomerService Service,RestrantDbContext context )
         {
             _Service=Service ;
+            _context = context;
         }
-        /// <summary>
-        /// Add data of Customer
-        /// </summary>
-        /// <remarks>
-        /// Sample request:
-        /// 
-        ///    Post api/CreateCustomer
-        ///     {        
-        ///       "Id": "Enter Id  Here",   
-        ///        "Name": "Enter  Name of item  Here", 
-        ///     }
-        /// </remarks>
-        /// <returns>Add Customer</returns>
-        /// <response code="201">Returns the new data of Customer </response>
-        /// <response code="400">If the error was occured</response>     
-        [HttpPost]
-         [Route("[action]")]
-        public Task CreateCustomer([FromBody]CustomerDTO dto)
-        {
-            return (_Service.CreateCustomer(dto));
-        }
+        [HttpGet]
+        [Route("[action]")]
         /// <summary>
         /// return list of Customer
         /// </summary>
         /// <returns>all data Customer</returns>
         /// <response code="201">Returns the all data of Customer </response>
-        /// <response code="400">If the error was occured</response>     
-        [HttpGet]
-        [Route("[action]")]
-        public Task<List<CustomerDTO>> GetAllCustomerAsync()
+        /// <response code="500">If the error was occured</response>  
+        public Task<List<CustomerDTO>> GetAllCustomerAsync([FromHeader] string accessKey)
         {
+            //access just for employee
+            if (string.IsNullOrEmpty(accessKey))
+            {
+                Log.Information("Access Key not found");
+                return null;
 
-            return (_Service.GetAllCustomerAsync());
+            }
+            if (_context.Employes.Any(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now))
+            {
+                return _Service.GetAllCustomerAsync();
+            }
+            else
+            {
+                Log.Information("Access Key not found");
+                return null;
+            }
+      
+        
+          
         }
         /// <summary>
         /// return the Customer by id
@@ -61,17 +62,67 @@ namespace ResturantManagement.Controllers
         ///    GET api/GetCustomerById
         ///     {        
         ///       "Id": "Enter Id  Here",   
-        ///       
+        ///         "accessKey": "Enter accessKey  Here to check the validates",   
         ///     }
         /// </remarks>
         /// <returns>Returns Customer</returns>
         /// <response code="201">Returns the  data of Customer </response>
-        /// <response code="400">If the error was occured</response>    
+        /// <response code="400">If the not found</response>    
+        /// <response code="500">If the error was occured</response>    
         [HttpGet]
         [Route("[action]")]
-        public Task GetCustomerById([FromRoute] int Id)
+        public async  Task<IActionResult> GetCustomerById([FromRoute] int Id, [FromHeader] string accessKey) {
+            try
+            {//just employee becouse if user know the id can access the data of anther customer
+                if (string.IsNullOrEmpty(accessKey))
+                {
+                    Log.Information("Access Key not found");
+                      return StatusCode(400,new {Response= "Access Key not found" });
+                }
+                if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
+                x.AccesskeyExpireDate > DateTime.Now))
+                {
+                    var result= await _Service.GetCustomerByIdAsync(Id);
+                    return Ok(result);
+                }
+                Log.Information("you cannot access");
+                return StatusCode(500, new { Response = "you cannot access" });
+                } 
+            catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+            } 
+       
+        /// <summary>
+        /// Add data of Customer
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///    Post api/CreateCustomer
+        ///     {        
+        ///       "Id": "Enter Id  Here",   
+        ///       "Name": "Enter  Name of item  Here", 
+        ///       "Email": "Enter Id  Here",   
+        ///       "password": "Enter  password of Here", 
+        ///       "phone": "Enter phone number  Here",   
+        ///     }
+        /// </remarks>
+        /// <returns>Add Customer</returns>
+
+        [HttpPost]
+         [Route("[action]")]
+        public Task CreateCustomer([FromBody]CustomerDTO dto)
         {
-            return (_Service .GetCustomerById(Id));
+            try
+            { 
+                return (_Service.CreateCustomer(dto));
+            } 
+            catch (Exception ex) 
+            {
+                throw new Exception(ex.Message);
+            }        
         }
         /// <summary>
         /// Update the data of Customer
@@ -81,8 +132,11 @@ namespace ResturantManagement.Controllers
         /// 
         ///    Put api/UpdateCustomer
         ///     {        
-        ///            "Id": "Enter Id  Here",   
-        ///        "Name": "Enter  Name of item  Here", 
+        ///       "Id": "Enter Id  Here",   
+        ///       "Name": "Enter  Name of item  Here", 
+        ///       "Email": "Enter Id  Here",   
+        ///       "password": "Enter  password of Here", 
+        ///       "phone": "Enter phone number  Here",  
         ///     }
         /// </remarks>
         /// <returns>Update Customer</returns>
@@ -90,9 +144,28 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>    
         [HttpPut]
         [Route("[action]")]
-        public Task UpdateCustomer([FromBody] CustomerDTO dto)
+        public async Task UpdateCustomer([FromBody] CustomerDTO dto, [FromHeader] string accessKey)
         {
-            return _Service .UpdateCustomer(dto);
+                try
+                {
+                    if (string.IsNullOrEmpty(accessKey))
+                    {
+                        Log.Information("Access Key not found");
+                        throw new Exception("Please Provide Your Access Key");
+                    }
+                    if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
+                    x.AccesskeyExpireDate > DateTime.Now) || (await _context.Customers.AnyAsync(x => x.AccessKey == accessKey &&
+                    x.AccesskeyExpireDate > DateTime.Now)))
+                    {
+
+                      _Service.UpdateCustomer(dto);
+                }
+                  
+                }
+                catch (Exception ex)
+                {
+                throw new Exception(ex.Message);
+                }
         }
         /// <summary>
         /// DElET the data of Customer
@@ -105,14 +178,35 @@ namespace ResturantManagement.Controllers
         ///     }
         /// </remarks>
         /// <returns>DElET  Customer</returns>
-        /// <response code="201">DElET the  data of Customer </response>
-        /// <response code="400">If the error was occured</response>    
-
+        /// <response code="200">DElET the  data of Customer </response>
+        /// <response code="400">not found accessKey</response>    
+        /// <response code="500">If the error was occured</response>   
         [HttpDelete]
         [Route("[action]")]
-        public Task DeleteCustomer([FromRoute] int Id)
+        public async Task<IActionResult> DeleteCustomer([FromRoute] int Id, [FromHeader] string accessKey)
         {
-            return _Service .DeleteCustomer(Id);
+            try{  if (string.IsNullOrEmpty(accessKey))
+            {
+                Log.Information("Access Key not found");  
+                return StatusCode(400,new { Response="Please Provide Your Access Key" });
+            }
+            if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now) ||(await _context.Customers.AnyAsync(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now)))
+            {
+              var re=_Service.DeleteCustomer(Id);
+                return Ok();
+            }
+            else
+            {
+                return Unauthorized("Please Provide Your Access Key");
+
+            }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Response = ex.Message});
+            }
         }
     }
 }

@@ -27,8 +27,11 @@ namespace ResturantManagement_Infra.Service
         public async Task CreateEmploye(EmployeDTO dto)
         {
             Log.Debug("Debugging CreateEmploye Service has been started");
-            Employe e = new Employe();
+            Employe e = new Employe(); 
+                e.Email = dto.Email;
+            e.Password = dto.Password;
             e.Name = dto.Name;
+            e.Position = dto.Position;
             await _context.AddAsync(e);
             await _context.SaveChangesAsync();
             Log.Information("db query has been add new Employe Service");
@@ -59,24 +62,53 @@ namespace ResturantManagement_Infra.Service
                          {
                              Name = e.Name,
                              EmployeId = e.EmployeId,
+                             Position = e.Position,
+                             Email = e.Email,
                          };
             Log.Information("Db query has been Get All Employe Service");
             Log.Debug("Debugging GetAllEmployeAsync Service has been finised");
             return (result.ToList());
         }
 
-        public async Task GetEmployeById(int Id)
+        public async Task<EmployeDTO> GetEmployeById(int Id)
         {
             Log.Debug("Debugging GetEmployeById Service has been started");
-            var result = await _context.Employes.AnyAsync(x => x.EmployeId == Id);
-            Log.Information($"Db Query has been get Employe Id Service");
+
+            try
+            {
+                var result = await _context.Employes.FindAsync(Id);
+                if (result != null)
+                {
+                    EmployeDTO EmployeDTO = new EmployeDTO()
+                    {
+                        Name = result.Name,
+                        Email = result.Email,
+                        Position = result.Position,
+                    };
+                    Log.Information($"Db Query has been get Employe Id Service");
+                    return EmployeDTO;
+                }
+                else
+                    return null;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("can not get Employe by id");
+            }
+
             Log.Debug($"Debugging GetEmployeById Service Has been Finished Successfully With CustomerId");
         }
+
+         
         public async Task UpdateEmploye(EmployeDTO dto)
         {
             Log.Debug($"Debugging UpdateEmploy Service has been started");
             var result = await _context.Employes.FindAsync(dto.EmployeId);
             result.Name = dto.Name;
+            result.EmployeId = dto.EmployeId;
+            result.Position = dto.Position;
+            result.Email = dto.Email;
+            result.Password = dto.Password;
             _context.Update(result);
             await _context.SaveChangesAsync();
             Log.Information($"Db has been updates Service");

@@ -10,8 +10,9 @@ namespace ResturantManagement_Core.DTO
     public class OrderDto
     {
         public int OrderId { get; set; }
-       
-
+        public int OrderItemId { get; set; }
+        public int CustomerId { get; set; }
+        public int EmployeId { get; set; }
         public decimal TotalPrice { get; set; }
     }
 }

@@ -11,7 +11,7 @@ namespace ResturantManagement_Core.IRepository
     public interface IOrderItemRepository
     {
          Task<List<OrderItem>> GetAllOrderItemAsync();
-        Task GetOrderItemById(int Id);
+        Task<OrderItem> GetOrderItemById(int Id);
         Task CreateOrderItem(OrderItem o);
         Task UpdateOrderItem(OrderItem o);
         Task DeleteOrderItem(int Id);

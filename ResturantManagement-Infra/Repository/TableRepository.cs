@@ -81,36 +81,38 @@ namespace ResturantManagement_Infra.Repository
         
         }
 
-        public async Task GetTableById(int Id)
+        public async Task<Table> GetTableById(int Id)
         {
-            Log.Debug("Debugging GetTableById  Repository has been started");
             try
             {
-   var result = await _context.Tables.AnyAsync(x => x.TableId == Id);
-            Log.Information($"Db Query has been get Table Id Repository");
+                Log.Debug("Debugging GetTableById  Service has been started");
+                var result = await _context.Tables.FindAsync(Id);
+                Log.Information($"Db Query has been get Table Id Service");
+                Log.Debug($"Debugging GetMenuById Service Has been Finished Successfully With TableId ");
+                return result;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message + "Db query does not has object in model");
+                throw new Exception(ex.Message);
             }
 
-            Log.Debug($"Debugging GetMenuById Repository Has been Finished Successfully With TableId ");
         }
         public async Task UpdateTable(Table t)
         {
-            Log.Debug($"Debugging UpdateTable Repository has been started");
             try
             {
-              var result = await _context.Tables.FindAsync(t.TableId);
-            _context.Update(result);
-            await _context.SaveChangesAsync();
-            Log.Information($"Db has been updates Table Repository");
+                Log.Debug("Debugging Create Table Service has been started");
+                Table tt = new Table();
+                t.TableNumber = t.TableNumber;
+                await _context.AddAsync(t);
+                await _context.SaveChangesAsync();
+                Log.Information("db query has been add new Table Service");
+                Log.Debug("Debugging Create Table Service has been finished");
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message + "Db query can not updates Table");
+                throw new Exception(ex.Message);
             }
-            Log.Debug($"Debugging UpdateTable Repository has been Finished"); 
         }
         #endregion
     }

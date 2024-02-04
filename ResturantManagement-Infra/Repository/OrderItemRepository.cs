@@ -25,7 +25,8 @@ namespace ResturantManagement_Infra.Repository
         #region OrderItem
         public async Task CreateOrderItem(OrderItem o)
         {
-            try {         Log.Debug("Debugging Create Order Item Repository has been started");
+            try {  
+                Log.Debug("Debugging Create Order Item Repository has been started");
             OrderItem or = new OrderItem();
             or.OrderId = o.OrderId;
             or.MenuId = o.MenuId;
@@ -73,7 +74,7 @@ namespace ResturantManagement_Infra.Repository
                              {
                                  MenuId = o.MenuId,
                                  OrderItemId = o.OrderItemId,
-                                 Order = o.Order,
+                                 OrderId = o.OrderId,
                                  Quantity = o.Quantity,
                              };
                 Log.Information("Db query has been Get All OrderItem Repository");
@@ -86,13 +87,14 @@ namespace ResturantManagement_Infra.Repository
             
         }
 
-        public async Task GetOrderItemById(int Id)
+        public async Task<OrderItem> GetOrderItemById(int Id)
         {
             Log.Debug("Debugging GetOrderItemById Repository has been started");
             try
             {
-                var result = await _context.OrderItems.AnyAsync(x => x.OrderItemId == Id);
+                var result = await _context.OrderItems.FindAsync(Id);
                 Log.Information($"Db Query has been get OrderItem Id Repository");
+                return result;
             }
             catch (Exception ex)
             {

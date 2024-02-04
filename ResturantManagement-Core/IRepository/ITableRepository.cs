@@ -11,7 +11,7 @@ namespace ResturantManagement_Core.IRepository
     public interface ITableRepository
     {
         Task<List<Table>> GetAllTableAsync();
-        Task GetTableById(int Id);
+        Task<Table> GetTableById(int Id);
         Task CreateTable(Table t);
         Task UpdateTable(Table t);
         Task DeleteTable(int Id);

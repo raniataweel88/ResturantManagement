@@ -11,7 +11,7 @@ namespace ResturantManagement_Core.IRepository
     public interface IEmployeRepository
     {
         Task<List<Employe>> GetAllEmployeAsync();
-        Task GetEmployeById(int Id);
+        Task<Employe> GetEmployeById(int Id);
         Task CreateEmploye(Employe e);
         Task UpdateEmploye(Employe e);
         Task DeleteEmploye(int Id);

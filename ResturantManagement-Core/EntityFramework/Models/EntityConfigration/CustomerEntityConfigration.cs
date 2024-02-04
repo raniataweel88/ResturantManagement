@@ -15,7 +15,7 @@ namespace ResturantManagement_Core.EntityFramework.Models.EntityConfigration
         builder.Property(x=>x.CustomerId).UseIdentityColumn();
         builder.Property(x => x.Name).HasMaxLength(20);
         builder.Property(x => x.Phone).HasMaxLength(10);
-
+       
         }
     }
 }

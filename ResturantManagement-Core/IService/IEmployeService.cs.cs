@@ -1,4 +1,5 @@
 ﻿using ResturantManagement_Core.DTO;
+using ResturantManagement_Core.EntityFramework.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace ResturantManagement_Core.IService
     public interface IEmployeService
     {
         Task<List<EmployeDTO>> GetAllEmployeAsync();
-        Task GetEmployeById(int Id);
+        Task<EmployeDTO> GetEmployeById(int Id);
         Task CreateEmploye(EmployeDTO dto);
         Task UpdateEmploye(EmployeDTO dto);
         Task DeleteEmploye(int Id);

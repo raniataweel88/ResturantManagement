@@ -29,7 +29,8 @@ namespace ResturantManagement_Infra.Repository
         {
             Log.Debug("Debugging Create Order Repository has been started");
             Order or = new Order();
-            try {     or.TotalPrice = 0;
+            try {    
+                or.TotalPrice = 0;
             await _context.AddAsync(or);
             await _context.SaveChangesAsync();
             Log.Information("db query has been add new order Repository"); }
@@ -79,13 +80,14 @@ namespace ResturantManagement_Infra.Repository
             Log.Debug("Debugging GetAllOrderAsync has been finished Repository");
       
         }
-        public async Task GetOrderById(int Id)
+        public async Task<Order> GetOrderById(int Id)
         {
             Log.Debug("Debugging GetOrderById Repository has been started ");
             try
             {
-             var result = await _context.Orders.AnyAsync(x => x.OrderId == Id);
+             var result = await _context.Orders.FindAsync(Id);
             Log.Information($"Db Query has been get Order Id Repository");
+                return result;
             }
             catch (Exception ex)
             {

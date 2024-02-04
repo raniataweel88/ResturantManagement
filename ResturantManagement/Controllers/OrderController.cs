@@ -1,8 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ResturantManagement_Core.DTO;
+using ResturantManagement_Core.EntityFramework.Context;
 using ResturantManagement_Core.EntityFramework.Models;
+using ResturantManagement_Core.IService;
 using ResturantManagement_Infra.Service ;
+using Serilog;
 
 namespace ResturantManagement.Controllers
 {
@@ -10,10 +14,13 @@ namespace ResturantManagement.Controllers
     [ApiController]
     public class OrderController : ControllerBase
     {
-        private readonly OrderService  _Service ;
-        public OrderController(OrderService  Service )
+        private readonly RestrantDbContext _context;
+
+        private readonly IOrderService _Service;
+        public OrderController(IOrderService Service, RestrantDbContext context)
         {
-            _Service  = Service ;
+            _Service = Service;
+            _context = context;
         }
         /// <summary>
         /// Add data of Order
@@ -24,17 +31,33 @@ namespace ResturantManagement.Controllers
         ///    Post api/CreateOrder
         ///     {        
         ///       "Id": "Enter Id  Here",   
-        ///        "Name": "Enter  Name of item  Here", 
-        ///     }
+        ///        "Name": "Enter  Name of item  Here", } 
         /// </remarks>
         /// <returns>Add Order</returns>
         /// <response code="201">Returns the new data of Order </response>
         /// <response code="400">If the error was occured</response>     
         [HttpPost]
         [Route("[action]")]
-        public Task CreateOrder(OrderDto dto)
+        public async Task<IActionResult> CreateOrder([FromBody] OrderDto dto, [FromHeader] string accessKey)
         {
-            return (_Service.CreateOrder(dto));
+            if (string.IsNullOrEmpty(accessKey))
+            {
+                Log.Information("Access Key not found");
+                return BadRequest("Please Provide Your Access Key");
+
+            }
+            if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now) || await _context.Customers.AnyAsync(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now))
+            {
+                var result = _Service.CreateOrder(dto);
+                return Ok(result);
+            }
+            else
+            {
+                return Unauthorized("Please Provide Your Access Key");
+
+            }
         }
         /// <summary>
         /// return list of Order
@@ -44,10 +67,21 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>     
         [HttpGet]
         [Route("[action]")]
-        public Task<List<OrderDto>> GetAllOrderAsync()
+        public async Task<List<OrderDto>> GetAllOrderAsync([FromHeader] string accessKey)
         {
+            if (string.IsNullOrEmpty(accessKey))
+            {
+                Log.Information("Access Key not found");
+                return null;
 
-            return (_Service .GetAllOrderAsync());
+            }
+            if (_context.Employes.Any(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now))
+            {
+                return await _Service.GetAllOrderAsync();
+            }
+            else
+            return null;
         }
         /// <summary>
         /// return the Order by id
@@ -58,7 +92,6 @@ namespace ResturantManagement.Controllers
         ///    GET api/GetOrderById
         ///     {        
         ///       "Id": "Enter Id  Here",   
-        ///       
         ///     }
         /// </remarks>
         /// <returns>Returns Order</returns>
@@ -66,9 +99,26 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>    
         [HttpGet]
         [Route("[action]")]
-        public Task GetOrderById(int Id)
+        public async Task<IActionResult> GetOrderById( int Id, [FromHeader] string accessKey)
         {
-            return (_Service.GetOrderById(Id));
+            if (string.IsNullOrEmpty(accessKey))
+            {
+                Log.Information("Access Key not found");
+                return BadRequest("Please Provide Your Access Key");
+
+            }
+            if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now) || await _context.Customers.AnyAsync(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now))
+            {
+                return Ok(await _context.Orders.FindAsync(Id));
+            }
+            else
+            {
+                return Unauthorized("Please Provide Your Access Key");
+
+            }
+
         }
         /// <summary>
         /// Update the data of Order
@@ -87,9 +137,25 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>    
         [HttpPut]
         [Route("[action]")]
-        public Task UpdateOrder(OrderDto dto)
+        public async Task<IActionResult> UpdateOrder([FromBody] OrderDto dto, [FromHeader] string accessKey)
         {
-            return _Service .UpdateOrder(dto);
+            if (string.IsNullOrEmpty(accessKey))
+            {
+                Log.Information("Access Key not found");
+                return BadRequest("Please Provide Your Access Key");
+            }
+            if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now) ||await _context.Customers.AnyAsync(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now))
+            {
+                var re =_Service.UpdateOrder(dto);
+                return Ok(re);
+            
+            }
+            else
+            {
+                return Unauthorized("Please Provide Your Access Key");
+            }
         }
         /// <summary>
         /// DElET the data of Order
@@ -108,9 +174,24 @@ namespace ResturantManagement.Controllers
 
         [HttpDelete]
         [Route("[action]")]
-        public Task DeleteOrder(int Id)
+        public async Task<IActionResult> DeleteOrder([FromRoute] int Id, [FromHeader] string accessKey)
         {
-            return _Service .DeleteOrder(Id);
-        }
-    }
-}
+            if (string.IsNullOrEmpty(accessKey))
+            {
+                Log.Information("Access Key not found");
+                return BadRequest("Please Provide Your Access Key");
+            }
+
+            if ( await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now) ||await _context.Customers.AnyAsync(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now))
+            {
+                var re = _Service.DeleteOrder(Id);
+                return Ok(re);
+            }
+            else
+            {
+                return Unauthorized("Please Provide Your Access Key");
+            }
+         }
+    } }

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ResturantManagement_Core.DTO;
 using ResturantManagement_Core.EntityFramework.Context;
@@ -26,9 +27,12 @@ namespace ResturantManagement_Infra.Service
         #region Order
         public async Task CreateOrder(OrderDto dto)
         {
-            Log.Debug("Debugging Create Order Service has been started");
+                Log.Debug("Debugging Create Order Service has been started");
             Order o = new Order();
-            o.TotalPrice = 0;
+            o.TotalPrice = dto.TotalPrice;
+            o.OrderItemId = dto.OrderItemId;
+            o.CustomerId = dto.CustomerId;
+            o.EmployeId = dto.EmployeId;
             await _context.AddAsync(o);
             await _context.SaveChangesAsync();
             Log.Information("db query has been add new order");
@@ -53,6 +57,7 @@ namespace ResturantManagement_Infra.Service
         public async Task<List<OrderDto>> GetAllOrderAsync()
         {
             Log.Debug("Debugging GetAllOrderAsync Service has been started");
+ 
             var Order = await _context.Orders.ToListAsync();
             var result = from o in Order
                          select new OrderDto
@@ -64,14 +69,35 @@ namespace ResturantManagement_Infra.Service
             Log.Debug("Debugging GetAllOrderAsync has been finished Service");
             return (result.ToList());
         }
-        public async Task GetOrderById(int Id)
+        public async Task<OrderDto> GetOrderById(int Id)
         {
             Log.Debug("Debugging GetOrderById Service has been started ");
-            var result = await _context.Orders.AnyAsync(x => x.OrderId == Id);
-            Log.Information($"Db Query has been get Order Id Service");
-            Log.Debug($"Debugging GetOrderItemById Service Has been Finished Successfully With OrderId");
-        }
-        public async Task UpdateOrder(OrderDto dto)
+            try
+            {
+                Log.Information($"Db Query has been get Order Id Service");
+                var result = await _context.Orders.FindAsync(Id);
+                if (result != null)
+                {
+                    OrderDto OrderDt = new OrderDto()
+                    {
+                        CustomerId = result.CustomerId,
+                        OrderId = result.OrderId,
+                        OrderItemId = result.OrderItemId,
+                        TotalPrice = result.TotalPrice,
+                    };
+                    Log.Information($"Db Query has been get order Id Service");
+                    return OrderDt;
+                }
+                else
+                return null;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("can not get order  by id");
+            }
+      
+        Log.Debug($"Debugging GetOrderItemById Service Has been Finished Successfully With OrderId");
+          }public async Task UpdateOrder(OrderDto dto)
         {
             Log.Debug($"Debugging UpdateOrder Service has been started");
             var result = await _context.Orders.FindAsync(dto.OrderId);

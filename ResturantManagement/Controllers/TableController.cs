@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ResturantManagement_Core.DTO;
+using ResturantManagement_Core.EntityFramework.Context;
+using ResturantManagement_Core.IService;
 using ResturantManagement_Infra.Service ;
+using Serilog;
 
 namespace ResturantManagement.Controllers
 {
@@ -9,11 +13,14 @@ namespace ResturantManagement.Controllers
     [ApiController]
     public class TableController : ControllerBase
     {
-        private readonly TableService  _Service ;
-        public TableController(TableService  Service )
+              private readonly RestrantDbContext _context;
+        private readonly ITableService  _Service ;
+        public TableController(ITableService  Service, RestrantDbContext context)
         {
             _Service  = Service ;
+            _context = context;
         }
+
         /// <summary>
         /// Add data of Table
         /// </summary>
@@ -23,8 +30,8 @@ namespace ResturantManagement.Controllers
         ///    Post api/CreateTable
         ///     {        
         ///       "Id": "Enter Id  Here",   
-        ///        "Name": "Enter  Name of item  Here", 
-        ///        "price":"Enter your price of item"
+        ///        "TableNumber": "Enter  Number Here", 
+        ///   "posistion":"Administrator or staff"
         ///     }
         /// </remarks>
         /// <returns>Add Table</returns>
@@ -32,9 +39,15 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>     
         [HttpPost]
         [Route("[action]")]
-        public Task CreateTable(TableDto dto)
+        public async Task CreateTable([FromBody] TableDto dto, [FromHeader] string email, [FromHeader] string pass)
         {
-            return (_Service .CreateTable(dto));
+            if (await(_context.Employes.AnyAsync(x => x.Email == email && x.Password == pass && x.Position=="Administrator")))
+                { 
+                var r =  (_Service.CreateTable(dto));
+               
+            }
+            else
+            throw new Exception("dont have acces");           
         }
         /// <summary>
         /// return list of Table
@@ -44,10 +57,18 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>     
         [HttpGet]
         [Route("[action]")]
-        public Task<List<TableDto>> GetAllTableAsync()
+        public Task<List<TableDto>> GetAllTableAsync([FromHeader] string email, [FromHeader] string pass)
         {
-
-            return (_Service .GetAllTableAsync());
+            if (_context.Employes.Any(x => x.Email == email && x.Password == pass)|| _context.Customers.Any(x => x.Email == email && x.Password == pass))
+            {
+                return (_Service.GetAllTableAsync());
+            }
+            else
+            {
+                Log.Error("you do not have validates access");
+                throw new Exception("you do not have validates access");
+            }
+        
         }
         /// <summary>
         /// return the Table by id
@@ -64,10 +85,12 @@ namespace ResturantManagement.Controllers
         /// <response code="201">Returns the  data of Table </response>
         /// <response code="400">If the error was occured</response>    
         [HttpGet]
-        [Route("[action]")]
-        public Task GetTableById(int Id)
+        [Route("[action]/{Id}")]
+        public  async  Task<IActionResult> GetTableById([FromRoute] int Id)
         {
-            return (_Service .GetTableById(Id));
+
+            return Ok(await _Service.GetTableById(Id));
+          
         }
         /// <summary>
         /// Update the data of Table
@@ -83,13 +106,15 @@ namespace ResturantManagement.Controllers
         ///     }
         /// </remarks>
         /// <returns>Update Table</returns>
-        /// <response code="201">Update the old data of Table </response>
-        /// <response code="400">If the error was occured</response>    
+        /// <response code="200">Update the old data of Table </response>
+      
         [HttpPut]
         [Route("[action]")]
-        public Task UpdateTable(TableDto dto)
+        public  Task UpdateTable([FromBody] TableDto dto)
         {
-            return _Service .UpdateTable(dto);
+           
+               return _Service.UpdateTable(dto);
+         
         }
         /// <summary>
         /// DElET the data of Table
@@ -103,14 +128,24 @@ namespace ResturantManagement.Controllers
         ///     }
         /// </remarks>
         /// <returns>DElET  Table</returns>
-        /// <response code="201">DElET the  data of Table </response>
+        /// <response code="200">DElET the  data of Table </response>
         /// <response code="400">If the error was occured</response>    
 
         [HttpDelete]
         [Route("[action]")]
-        public Task DeleteTable(int Id)
+        public  async Task<IActionResult> DeleteTable([FromRoute] int Id, [FromHeader] string email, [FromHeader] string pass)
         {
-            return _Service .DeleteTable(Id);
+            if (await _context.Employes.AnyAsync(x => x.Email == email && x.Password == pass && x.Position.Equals("Administrator")))
+            {
+                var r = ( _Service.DeleteTable(Id));
+                return Ok(r);
+            }
+            else
+            {
+                Log.Error("you do not have validates access");
+            //    throw new Exception("you do not have validates access");
+                return StatusCode(400, "you should Administrator ");
+            }
         }
     }
 }

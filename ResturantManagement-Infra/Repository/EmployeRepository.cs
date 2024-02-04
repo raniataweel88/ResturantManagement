@@ -27,8 +27,11 @@ namespace ResturantManagement_Infra.Repository
         {
             Log.Debug("Debugging CreateEmploye Repository has been started");
             Employe em = new Employe();
-            try { em.Name=e.Name;
-            await _context.AddAsync(em);
+            try {
+                em.Name=e.Name;
+                em.Email = e.Email;
+                em.Position = e.Position;
+                await _context.AddAsync(em);
             await _context.SaveChangesAsync();
             Log.Information("db query has been add new Employe Repository") ;}
             catch (Exception ex)
@@ -67,6 +70,8 @@ namespace ResturantManagement_Infra.Repository
                          {
                              Name = e.Name,
                             EmployeId=e.EmployeId,
+                            Position = e.Position,
+                            Email = e.Email,    
                          };
             Log.Information("Db query has been Get All Employee Repository");       
                 return (result.ToList());}
@@ -78,12 +83,17 @@ namespace ResturantManagement_Infra.Repository
    
         }
 
-        public async Task GetEmployeById(int Id)
+        public async Task<Employe> GetEmployeById(int Id)
         {
-                Log.Debug("Debugging GetEmployeeById Repository has been started");
-            try { 
-                var result = await _context.Employes.AnyAsync(x => x.EmployeId == Id);
-            Log.Information($"Db Query has been get Employee Id Repository"); }
+            
+            Log.Debug("Debugging GetEmployeeById Repository has been started");
+            try
+            {
+                var result = await _context.Employes.FindAsync(Id);
+                Log.Information($"Db Query has been get Customers Id Service");
+                Log.Debug($"Debugging GetCustomerById Service Has been Finished Successfully With CustomerId");
+                return result;
+            }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message + "the object of model Employee is empty");

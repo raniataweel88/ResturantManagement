@@ -11,7 +11,7 @@ namespace ResturantManagement_Core.IRepository
     public interface IMenuRepository
     {
         Task<List<Menu>> GetAllMenuAsync();
-        Task GetMenuById(int Id);
+        Task<Menu> GetMenuById(int Id);
         Task CreateMenu(Menu m);
         Task UpdateMenu(Menu m);
         Task DeleteMenu(int Id);

@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ResturantManagement_Core.DTO;
 using ResturantManagement_Core.EntityFramework.Context;
@@ -26,13 +28,19 @@ namespace ResturantManagement_Infra.Service
         #region Table
         public async Task CreateTable(TableDto dto)
         {
-            Log.Debug("Debugging Create Table Service has been started");
+            try { 
+             Log.Debug("Debugging Create Table Service has been started");
             Table t = new Table();
             t.TableNumber = dto.TableNumber;
-            await _context.AddAsync(t);
+            await _context.Tables.AddAsync(t);
             await _context.SaveChangesAsync();
             Log.Information("db query has been add new Table Service");
-            Log.Debug("Debugging Create Table Service has been finised");
+            Log.Debug("Debugging Create Table Service has been finished");
+            }
+           catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task DeleteTable(int Id)
@@ -52,34 +60,69 @@ namespace ResturantManagement_Infra.Service
 
         public async Task<List<TableDto>> GetAllTableAsync()
         {
-            Log.Debug("Debugging GetAllTableAsync Service has been started");
+            try {  Log.Debug("Debugging GetAllTableAsync Service has been started");
             var Table = await _context.Tables.ToListAsync();
             var result = from t in Table
                          select new TableDto
                          {
+                             TableId = t.TableId,
                              TableNumber = t.TableNumber,
                          };
             Log.Information("Db query has been Get All Table Service");
-            Log.Debug("Debugging GetAllTableAsync Service has been finised");
+            Log.Debug("Debugging GetAllTableAsync Service has been finished");
             return (result.ToList());
-        }
-
-        public async Task GetTableById(int Id)
+             }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+             }
+}
+        public async Task<TableDto> GetTableById(int Id)
         {
-            Log.Debug("Debugging GetTableById  Service has been started");
-            var result = await _context.Tables.AnyAsync(x => x.TableId == Id);
-            Log.Information($"Db Query has been get Table Id Service");
+            try
+            {
+             Log.Debug("Debugging GetTableById  Service has been started");
+                
+            var result = await _context.Tables.FindAsync(Id);
+                if (result != null)
+                { 
+                    TableDto table = new TableDto()
+                    {
+                        TableId = result.TableId,
+                        TableNumber = result.TableNumber,
+                }; 
+                    Log.Information($"Db Query has been get Table Id Service");
+                   return table;
+                }
+                return null;
+          
             Log.Debug($"Debugging GetMenuById Service Has been Finished Successfully With TableId ");
+
+            
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+           
         }
         public async Task UpdateTable(TableDto dto)
         {
+            try {    
             Log.Debug($"Debugging UpdateTable Service has been started");
             var result = await _context.Tables.FindAsync(dto.TableId);
-           result.TableNumber=dto.TableNumber;
-            _context.Update(result);
+                result.TableId = dto.TableId;
+                result.TableNumber=dto.TableNumber;
+              _context.Update(result);
             await _context.SaveChangesAsync();
             Log.Information($"Db has been updates Service");
-            Log.Debug($"Debugging UpdateTable Service has been Finished"); ;
+            Log.Debug($"Debugging UpdateTable Service has been Finished"); 
+              
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+       
         }
         #endregion
     }

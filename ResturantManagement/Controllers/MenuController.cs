@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using ResturantManagement_Core.DTO;
+using ResturantManagement_Core.EntityFramework.Context;
 using ResturantManagement_Core.EntityFramework.Models;
 using ResturantManagement_Core.IService ;
 using ResturantManagement_Infra.Service ;
@@ -13,14 +15,51 @@ namespace ResturantManagement.Controllers
     [ApiController]
     public class MenuController : ControllerBase
     {
-        private readonly MenuService  _Service ;
-        private readonly OrderItemService _Service1;
-        public MenuController(MenuService  Service , OrderItemService Service1)
+        private readonly IMenuService  _Service ;
+        private readonly IOrderItemService _Service1; 
+        private readonly RestrantDbContext _context;
+        public MenuController(IMenuService  Service , IOrderItemService Service1, RestrantDbContext context)
         {
             _Service  = Service ;
             _Service1 = Service1;
+            _context = context;
+            
+       
         }
         #region Mune
+        /// <summary>
+        /// return list of mune
+        /// </summary>
+        /// <returns>all data Menu</returns>
+        /// <response code="201">Returns the all data of menu </response>
+        /// <response code="400">If the error was occured</response>     
+        [HttpGet]
+        [Route("[action]")]
+        public Task<List<MenuDTO>> GetAllMenuAsync()
+        {
+            return (_Service.GetAllMenuAsync());
+        }
+        /// <summary>
+        /// return the menu by id
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///    GET api/GetMenuById
+        ///     {        
+        ///       "Id": "Enter Id  Here",   
+        ///       
+        ///     }
+        /// </remarks>
+        /// <returns>Returns Menu</returns>
+        /// <response code="201">Returns the  data of menu </response>
+        /// <response code="400">If the error was occured</response>    
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<IActionResult> GetMenuById([FromRoute]int Id)
+        {
+            return Ok(await _Service.GetMenuById(Id));
+        }
         /// <summary>
         /// Add data of Menu
         /// </summary>
@@ -39,43 +78,18 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>     
         [HttpPost]
         [Route("[action]")]
-        public  Task CreateMenu(MenuDTO dto)
+        public  Task CreateMenu([FromBody] MenuDTO dto, [FromHeader] string email, [FromHeader] string pass)
         {
-            return (_Service.CreateMenu(dto));
-        }
-        /// <summary>
-        /// return list of mune
-        /// </summary>
-        /// <returns>all data Menu</returns>
-        /// <response code="201">Returns the all data of menu </response>
-        /// <response code="400">If the error was occured</response>     
-        [HttpGet]
-        [Route("[action]")]
-        public  Task<List<MenuDTO>> GetAllMenuAsync()
-        {
-                return (_Service .GetAllMenuAsync());
-         }
-        /// <summary>
-        /// return the menu by id
-        /// </summary>
-        /// <remarks>
-        /// Sample request:
-        /// 
-        ///    GET api/GetMenuById
-        ///     {        
-        ///       "Id": "Enter Id  Here",   
-        ///       
-        ///     }
-        /// </remarks>
-        /// <returns>Returns Menu</returns>
-        /// <response code="201">Returns the  data of menu </response>
-        /// <response code="400">If the error was occured</response>    
-        [HttpGet]
-        [Route("[action]")]
-        public  Task GetMenuById(int Id)
-    {
-       return (_Service .GetMenuById(Id));
-    }
+            if (_context.Employes.Any(x => x.Email == email && x.Password == pass && x.Position == "Administrator"))
+            {
+                return  _Service.CreateMenu(dto);
+            }
+            else 
+            {   
+                throw new Exception("you do not have validates access"); 
+            }
+         }   
+     
         /// <summary>
         /// Update the data of Mune
         /// </summary>
@@ -95,10 +109,18 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>    
         [HttpPut]
         [Route("[action]")]
-        public  Task UpdateMenu(MenuDTO dto)
-    {
-      return  _Service.UpdateMenu(dto);
-    }
+        public  Task UpdateMenu([FromBody] MenuDTO dto, [FromHeader] string email, [FromHeader] string pass)
+             {
+            if (_context.Employes.Any(x => x.Email == email && x.Password == pass && x.Position == "Administrator"))
+            {
+                return _Service.UpdateMenu(dto);
+            }
+            else
+            {
+                Log.Error("you do not have validates access");
+                throw new Exception("you do  not have validates access");
+            }
+            }
         /// <summary>
         /// DElET the data of Mune
         /// </summary>
@@ -116,33 +138,20 @@ namespace ResturantManagement.Controllers
 
         [HttpDelete]
         [Route("[action]")]
-        public  Task DeleteMune(int Id)
-    {
-            return _Service.DeleteMenu(Id);   
-    }
+        public async Task DeleteMune( int Id, [FromHeader] string email, [FromHeader] string pass)
+        {
+            if ( await _context.Employes.AnyAsync(x => x.Email == email && x.Password == pass && x.Position == "Administrator"))
+            {
+                 _Service.DeleteMenu(Id);
+           }
+            else
+            {
+                Log.Error("you do not have validates access");
+                throw new Exception("you do not have validates access");
+            }
+        }
         #endregion
         #region OrderItem
-        /// <summary>
-        /// Add data of OderItem
-        /// </summary>
-        /// <remarks>
-        /// Sample request:
-        /// 
-        ///    Post api/CreateOrderItem
-        ///     {        
-        ///       "Id": "Enter Id  Here",   
-        ///        "Name": "Enter  Name of item  Here", 
-        ///     }
-        /// </remarks>
-        /// <returns>Add OrderItem</returns>
-        /// <response code="201">Returns the new data of OrderItem </response>
-        /// <response code="400">If the error was occured</response>     
-        [HttpPost]
-        [Route("[action]")]
-        public Task CreateOrder(OrderItemDto dto)
-        {
-            return (_Service1.CreateOrderItem(dto));
-        }
         /// <summary>
         /// return list of OrderItem
         /// </summary>
@@ -172,10 +181,37 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>    
         [HttpGet]
         [Route("[action]")]
-        public Task GetOrderItemById(int Id)
+        public async Task<IActionResult> GetOrderItemById([FromRoute] int Id)
         {
-            return (_Service1.GetOrderItemById(Id));
+            return Ok(await _Service1.GetOrderItemById(Id));
         }
+        /// <summary>
+        /// Add data of OderItem
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///    Post api/CreateOrderItem
+        ///     {        
+        ///       "Id": "Enter Id  Here",   
+        ///       "Name": "Enter  Name of item  Here", 
+        ///      "Description":Enter the Description  of item, 
+        ///       "Price":Enter your price
+        ///     }
+        /// </remarks>
+        /// <returns>Add OrderItem</returns>
+        /// <response code="200">Returns the new data of OrderItem </response>
+        /// <response code="400">If the error was occured</response>     
+        /// 
+        [HttpPost]
+        [Route("[action]")]
+        public Task CreateOrderItem([FromBody]OrderItemDto dto)
+        { 
+
+            return (_Service1.CreateOrderItem(dto));
+          
+        }
+       
         /// <summary>
         /// Update the data of OrderItem
         /// </summary>
@@ -193,7 +229,7 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>    
         [HttpPut]
         [Route("[action]")]
-        public Task UpdateOrderItem(OrderItemDto dto)
+        public Task UpdateOrderItem([FromBody]OrderItemDto dto)
         {
             return _Service1.UpdateOrderItem(dto);
         }
@@ -214,7 +250,7 @@ namespace ResturantManagement.Controllers
 
         [HttpDelete]
         [Route("[action]")]
-        public Task DeleteOrderItem(int Id)
+        public Task DeleteOrderItem([FromRoute]int Id)
         {
             return _Service1.DeleteOrderItem(Id);
         }

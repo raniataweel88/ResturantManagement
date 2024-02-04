@@ -1,4 +1,5 @@
 ﻿using ResturantManagement_Core.DTO;
+using ResturantManagement_Core.EntityFramework.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace ResturantManagement_Core.IService
     public interface ITableService
     {
         Task<List<TableDto>> GetAllTableAsync();
-        Task GetTableById(int Id);
+        Task<TableDto> GetTableById(int Id);
         Task CreateTable(TableDto dto);
         Task UpdateTable(TableDto dto);
         Task DeleteTable(int Id);
