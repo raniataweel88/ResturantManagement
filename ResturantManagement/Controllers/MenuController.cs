@@ -55,8 +55,8 @@ namespace ResturantManagement.Controllers
         /// <response code="201">Returns the  data of menu </response>
         /// <response code="400">If the error was occured</response>    
         [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> GetMenuById([FromRoute]int Id)
+        [Route("[action]/{Id}")]
+        public async Task<IActionResult> GetMenuById(int Id)
         {
             return Ok(await _Service.GetMenuById(Id));
         }
@@ -137,12 +137,12 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>    
 
         [HttpDelete]
-        [Route("[action]")]
+        [Route("[action]/{Id}")]
         public async Task DeleteMune( int Id, [FromHeader] string email, [FromHeader] string pass)
         {
             if ( await _context.Employes.AnyAsync(x => x.Email == email && x.Password == pass && x.Position == "Administrator"))
             {
-                 _Service.DeleteMenu(Id);
+               await  _Service.DeleteMenu(Id);
            }
             else
             {
@@ -160,9 +160,13 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>     
         [HttpGet]
         [Route("[action]")]
-        public Task<List<OrderItemDto>> GetAllOrderItemAsync()
+        public async Task<List<OrderItemDto>> GetAllOrderItemAsync([FromHeader] string accessKey)
         {
-            return (_Service1.GetAllOrderItemAsync());
+            if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now)){
+            return await _Service1.GetAllOrderItemAsync();
+            }
+            return null;
         }
         /// <summary>
         /// return the OrderItem by id
@@ -180,8 +184,8 @@ namespace ResturantManagement.Controllers
         /// <response code="201">Returns the  data of OrderItem </response>
         /// <response code="400">If the error was occured</response>    
         [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> GetOrderItemById([FromRoute] int Id)
+        [Route("[action]/{Id}")]
+        public async Task<IActionResult> GetOrderItemById( int Id, [FromHeader] string accessKey)
         {
             return Ok(await _Service1.GetOrderItemById(Id));
         }
@@ -205,10 +209,14 @@ namespace ResturantManagement.Controllers
         /// 
         [HttpPost]
         [Route("[action]")]
-        public Task CreateOrderItem([FromBody]OrderItemDto dto)
-        { 
-
-            return (_Service1.CreateOrderItem(dto));
+        public async Task CreateOrderItem([FromBody]OrderItemDto dto, [FromHeader] string accessKey)
+        {
+            if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
+                        x.AccesskeyExpireDate > DateTime.Now))
+            {
+              await _Service1.CreateOrderItem(dto);
+            }
+            throw new Exception("cannot add create order");
           
         }
        
@@ -229,9 +237,15 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>    
         [HttpPut]
         [Route("[action]")]
-        public Task UpdateOrderItem([FromBody]OrderItemDto dto)
+        public async Task UpdateOrderItem([FromBody]OrderItemDto dto, [FromHeader] string accessKey)
         {
-            return _Service1.UpdateOrderItem(dto);
+            if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
+                         x.AccesskeyExpireDate > DateTime.Now))
+            {
+
+                await _Service1.UpdateOrderItem(dto);
+            }
+            throw new Exception("cannot add create order");
         }
         /// <summary>
         /// DElET the data of OrderItem
@@ -249,12 +263,17 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>    
 
         [HttpDelete]
-        [Route("[action]")]
-        public Task DeleteOrderItem([FromRoute]int Id)
+        [Route("[action]/{Id}")]
+        public async Task DeleteOrderItem(int Id, [FromHeader] string accessKey)
         {
-            return _Service1.DeleteOrderItem(Id);
+                if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
+                             x.AccesskeyExpireDate > DateTime.Now))
+                {
+                await _Service1.DeleteOrderItem(Id);
+            }
+                throw new Exception("cannot add create order");
+            }
+
+            #endregion
         }
-    
-    #endregion
-}
 }

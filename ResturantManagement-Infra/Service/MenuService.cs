@@ -107,7 +107,7 @@ public async Task UpdateMenu(MenuDTO dto)
             {
              result.Name = dto.Name;
              result.Price = dto.Price;
-            _context.Update(result);
+            _context.Menus.Update(result);
              await _context.SaveChangesAsync();
             }
            Log.Information($"Db has been updates Service");

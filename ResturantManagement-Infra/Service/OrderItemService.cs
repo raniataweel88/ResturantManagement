@@ -29,10 +29,12 @@ namespace ResturantManagement_Infra.Service
         public async Task CreateOrderItem( OrderItemDto dto)
         {
                 Log.Debug("Debugging Create Order Item Service has been started");
-                OrderItem o = new OrderItem();
-                o.OrderId = dto.OrderId;
-                o.MenuId = dto.MenuId;
-            o.Quantity = dto.Quantity;
+                OrderItem o = new OrderItem() {
+                    OrderId = dto.OrderId,
+                  MenuId = dto.MenuId,
+                  Quantity = dto.Quantity,
+                 };
+                   
                 await _context.AddAsync(o);
                 await _context.SaveChangesAsync();
             Menu menu = new Menu();

@@ -29,10 +29,11 @@ namespace ResturantManagement_Infra.Service
         {
                 Log.Debug("Debugging Create Order Service has been started");
             Order o = new Order();
-            o.TotalPrice = dto.TotalPrice;
+            o.TotalPrice = 0;
             o.OrderItemId = dto.OrderItemId;
             o.CustomerId = dto.CustomerId;
             o.EmployeId = dto.EmployeId;
+            o.TableId = dto.TableId;
             await _context.AddAsync(o);
             await _context.SaveChangesAsync();
             Log.Information("db query has been add new order");
@@ -42,14 +43,18 @@ namespace ResturantManagement_Infra.Service
         public async Task DeleteOrder(int Id)
         {
             Log.Debug($"Debugging DeleteOrder Service has been started");
-            var result = _context.OrderItems.FindAsync(Id);
+            var result =await _context.Orders.FindAsync(Id);
             if (result != null)
             {
                 Log.Information("Order Is exist");
-                _context.Remove(result);
+                _context.Orders.Remove(result);
                 await _context.SaveChangesAsync();
                 Log.Information("Db Query deletes Service the item of Order successfully");
                 Log.Debug($"Debugging DeleteOrder Service has been finished");
+            }
+            else
+            {
+                throw new Exception("the Order not found");
             }
             Log.Error("Order Not Found");
         }
@@ -64,6 +69,12 @@ namespace ResturantManagement_Infra.Service
                          {
                              TotalPrice = o.TotalPrice,
                              OrderId = o.OrderId,
+                             CustomerId = o.CustomerId,
+                              OrderItemId = o.OrderItemId,
+                             EmployeId= o.EmployeId,
+                             TableId = o.TableId,
+
+
                          };
             Log.Information("Db query has been Get All Order Service");
             Log.Debug("Debugging GetAllOrderAsync has been finished Service");
@@ -84,12 +95,16 @@ namespace ResturantManagement_Infra.Service
                         OrderId = result.OrderId,
                         OrderItemId = result.OrderItemId,
                         TotalPrice = result.TotalPrice,
+                        TableId= result.TableId,
+                        EmployeId = result.EmployeId,
                     };
                     Log.Information($"Db Query has been get order Id Service");
                     return OrderDt;
                 }
                 else
-                return null;
+                {
+                    throw new Exception("the Order not found");
+                }
             }
             catch(Exception ex)
             {
@@ -103,15 +118,15 @@ namespace ResturantManagement_Infra.Service
             var result = await _context.Orders.FindAsync(dto.OrderId);
             var OrderItems = await _context.OrderItems.FindAsync(dto.OrderId);
             var Menu = await _context.Menus.FindAsync(dto.OrderId);
-            if (OrderItems != null)
+            if (OrderItems != null&& result!=null&&Menu!=null)
             {
                 result.TotalPrice = OrderItems.Quantity * Menu.Price;
-                _context.Update(result);
+                _context.Orders.Update(result);
             }
             else
             {
                 result.TotalPrice = 0;
-                _context.Update(result);
+                _context.Orders.Update(result);
             }
            
             await _context.SaveChangesAsync();

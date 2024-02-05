@@ -132,8 +132,8 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>    
 
         [HttpDelete]
-        [Route("[action]")]
-        public  async Task<IActionResult> DeleteTable([FromRoute] int Id, [FromHeader] string email, [FromHeader] string pass)
+       [ Route("[action]/{Id}")]
+        public async Task<IActionResult> DeleteTable(int Id, [FromHeader] string email, [FromHeader] string pass)
         {
             if (await _context.Employes.AnyAsync(x => x.Email == email && x.Password == pass && x.Position.Equals("Administrator")))
             {

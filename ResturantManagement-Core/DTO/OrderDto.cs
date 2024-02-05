@@ -13,6 +13,7 @@ namespace ResturantManagement_Core.DTO
         public int OrderItemId { get; set; }
         public int CustomerId { get; set; }
         public int EmployeId { get; set; }
+        public int TableId{ get; set; }
         public decimal TotalPrice { get; set; }
     }
 }

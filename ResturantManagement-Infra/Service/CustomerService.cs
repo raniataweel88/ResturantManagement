@@ -54,7 +54,7 @@ namespace ResturantManagement_Infra.Service
                 if (result != null)
                 {
                     Log.Information("Customer Is exist");
-                    _context.Remove(result);
+                    _context.Customers.Remove(result);
                     await _context.SaveChangesAsync();
                     Log.Information("Db Query deletes the customer Service successfully");
                     Log.Debug($"Debugging DeleteCustomer Service has been finished");
@@ -122,7 +122,7 @@ namespace ResturantManagement_Infra.Service
                     result.Name = dto.Name;
                     result.Phone = dto.Phone;
                     result.Email = dto.Email;
-                    _context.Update(result);
+                    _context.Customers.Update(result);
                     await _context.SaveChangesAsync();
                     Log.Information($"Db has been updates Service");
                 }

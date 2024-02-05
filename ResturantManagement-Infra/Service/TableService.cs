@@ -55,6 +55,10 @@ namespace ResturantManagement_Infra.Service
                 Log.Information("Db Query deletes the Table Service successfully");
                 Log.Debug($"Debugging DeleteTable Service has been finished");
             }
+            else
+            {
+                throw new Exception("the table not found");
+            }
             Log.Error("Table Not Found");
         }
 
@@ -94,9 +98,12 @@ namespace ResturantManagement_Infra.Service
                     Log.Information($"Db Query has been get Table Id Service");
                    return table;
                 }
-                return null;
-          
-            Log.Debug($"Debugging GetMenuById Service Has been Finished Successfully With TableId ");
+                else
+                {
+                    throw new Exception("the table not found");
+                }
+
+                Log.Debug($"Debugging GetMenuById Service Has been Finished Successfully With TableId ");
 
             
             }
@@ -111,12 +118,19 @@ namespace ResturantManagement_Infra.Service
             try {    
             Log.Debug($"Debugging UpdateTable Service has been started");
             var result = await _context.Tables.FindAsync(dto.TableId);
-                result.TableId = dto.TableId;
-                result.TableNumber=dto.TableNumber;
-              _context.Update(result);
-            await _context.SaveChangesAsync();
-            Log.Information($"Db has been updates Service");
-            Log.Debug($"Debugging UpdateTable Service has been Finished"); 
+                if(result != null)
+                {
+                 result.TableId = dto.TableId;
+                  result.TableNumber=dto.TableNumber;
+                  _context.Tables.Update(result);
+                await _context.SaveChangesAsync();
+                Log.Information($"Db has been updates Service");
+                }
+                else
+                {
+                    throw new Exception("the table not found");
+                }
+                Log.Debug($"Debugging UpdateTable Service has been Finished"); 
               
             }catch(Exception ex)
             {

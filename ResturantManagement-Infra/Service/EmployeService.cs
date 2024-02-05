@@ -41,11 +41,11 @@ namespace ResturantManagement_Infra.Service
         public async Task DeleteEmploye(int Id)
         {
             Log.Debug($"Debugging DeleteEmploye Service has been started");
-            var result = _context.Employes.FindAsync(Id);
+            var result =await _context.Employes.FindAsync(Id);
             if (result != null)
             {
                 Log.Information("Employe  Is Exist");
-                _context.Remove(result);
+                _context.Employes.Remove(result);
                 await _context.SaveChangesAsync();
                 Log.Information("Db Query deletes the item of Employe Service successfully");
                 Log.Debug($"Debugging DeleteEmploye Service has been finished");

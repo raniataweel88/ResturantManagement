@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ResturantManagement_Core.EntityFramework.Context;
 
@@ -11,9 +12,11 @@ using ResturantManagement_Core.EntityFramework.Context;
 namespace ResturantManagement_Core.Migrations
 {
     [DbContext(typeof(RestrantDbContext))]
-    partial class RestrantDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240205124727_m1")]
+    partial class m1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,7 +144,10 @@ namespace ResturantManagement_Core.Migrations
                     b.Property<int>("OrderItemId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TableId")
+                    b.Property<int?>("TableId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TableNumber")
                         .HasColumnType("int");
 
                     b.Property<decimal>("TotalPrice")
@@ -216,9 +222,7 @@ namespace ResturantManagement_Core.Migrations
 
                     b.HasOne("ResturantManagement_Core.EntityFramework.Models.Table", "Table")
                         .WithMany("Orders")
-                        .HasForeignKey("TableId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TableId");
 
                     b.Navigation("Customer");
 

@@ -60,8 +60,8 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the accesskey not found</response>  
         /// <response code="500">If the error was occured</response> 
         [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> GetEmployeById([FromRoute] int Id, [FromHeader] string accessKey)
+        [Route("[action]/{Id}")]
+        public async Task<IActionResult> GetEmployeById(int Id, [FromHeader] string accessKey)
         {
             if (string.IsNullOrEmpty(accessKey))
             {
@@ -165,8 +165,8 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>    
 
         [HttpDelete]
-        [Route("[action]")]
-        public async Task<IActionResult> DeleteEmploye([FromRoute] int Id, [FromHeader] string accessKey)
+        [Route("[action]/{Id}")]
+        public async Task<IActionResult> DeleteEmploye( int Id, [FromHeader] string accessKey)
         {
             if (string.IsNullOrEmpty(accessKey))
             {
@@ -177,12 +177,14 @@ namespace ResturantManagement.Controllers
             if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
             x.AccesskeyExpireDate > DateTime.Now))
             {
-                var DeleteEmploye = _Service.DeleteEmploye(Id);
-                return Ok();
+                await _Service.DeleteEmploye(Id);
+                return Ok("Employee deleted successfully");
             }
             else
             {
                 return Unauthorized("Please Provide Your Access Key");
+            
+            
             }
 
         }
