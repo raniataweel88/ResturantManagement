@@ -40,7 +40,7 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>     
         [HttpPost]
         [Route("[action]")]
-        public Task CreateOrder([FromBody] OrderDto dto, [FromHeader] string accessKey)
+        public Task CreateOrder([FromBody] OrderDTO dto, [FromHeader] string accessKey)
         {
             try
             {
@@ -59,7 +59,7 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>     
         [HttpGet]
         [Route("[action]")]
-        public Task<List<OrderDto>> GetAllOrderAsync([FromHeader] string accessKey)
+        public  Task<List<OrderDTO>> GetAllOrderAsync([FromHeader] string accessKey)
         {
             try
             {
@@ -73,7 +73,7 @@ namespace ResturantManagement.Controllers
                 x.AccesskeyExpireDate > DateTime.Now))
                 {
 
-                    return _Service.GetAllOrderAsync();
+                    return  _Service.GetAllOrderAsync();
                 }
                 else
                     throw new Exception("you can not get all order");
@@ -146,7 +146,7 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>    
         [HttpPut]
         [Route("[action]")]
-        public async Task<IActionResult> UpdateOrder([FromBody] OrderDto dto, [FromHeader] string accessKey)
+        public async Task<IActionResult> UpdateOrder([FromBody] OrderDTO dto, [FromHeader] string accessKey)
         {
             try
             {

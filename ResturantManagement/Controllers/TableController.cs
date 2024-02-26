@@ -39,7 +39,7 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>     
         [HttpPost]
         [Route("[action]")]
-        public async Task CreateTable([FromBody] TableDto dto, [FromHeader] string email, [FromHeader] string pass)
+        public async Task CreateTable([FromBody] TableDTO dto, [FromHeader] string email, [FromHeader] string pass)
         {
             if (await(_context.Employes.AnyAsync(x => x.Email == email && x.Password == pass && x.Position=="Administrator")))
                 { 
@@ -57,7 +57,7 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>     
         [HttpGet]
         [Route("[action]")]
-        public Task<List<TableDto>> GetAllTableAsync([FromHeader] string email, [FromHeader] string pass)
+        public Task<List<TableDTO>> GetAllTableAsync([FromHeader] string email, [FromHeader] string pass)
         {
             if (_context.Employes.Any(x => x.Email == email && x.Password == pass)|| _context.Customers.Any(x => x.Email == email && x.Password == pass))
             {
@@ -110,7 +110,7 @@ namespace ResturantManagement.Controllers
       
         [HttpPut]
         [Route("[action]")]
-        public  Task UpdateTable([FromBody] TableDto dto)
+        public  Task UpdateTable([FromBody] TableDTO dto)
         {
            
                return _Service.UpdateTable(dto);
@@ -137,8 +137,8 @@ namespace ResturantManagement.Controllers
         {
             if (await _context.Employes.AnyAsync(x => x.Email == email && x.Password == pass && x.Position.Equals("Administrator")))
             {
-                var r = ( _Service.DeleteTable(Id));
-                return Ok(r);
+            await _Service.DeleteTable(Id);
+                return Ok("done Delete Table");
             }
             else
             {

@@ -7,10 +7,9 @@ using System.Threading.Tasks;
 
 namespace ResturantManagement_Core.DTO
 {
-    public class OrderDto
+    public class OrderDTO
     {
         public int OrderId { get; set; }
-        public int OrderItemId { get; set; }
         public int CustomerId { get; set; }
         public int EmployeId { get; set; }
         public int TableId{ get; set; }

@@ -52,7 +52,7 @@ namespace ResturantManagement.Controllers
         ///     }
         /// </remarks>
         /// <returns>Returns Menu</returns>
-        /// <response code="201">Returns the  data of menu </response>
+        /// <response code="200">Returns the  data of menu </response>
         /// <response code="400">If the error was occured</response>    
         [HttpGet]
         [Route("[action]/{Id}")]
@@ -110,7 +110,7 @@ namespace ResturantManagement.Controllers
         [HttpPut]
         [Route("[action]")]
         public  Task UpdateMenu([FromBody] MenuDTO dto, [FromHeader] string email, [FromHeader] string pass)
-             {
+         {
             if (_context.Employes.Any(x => x.Email == email && x.Password == pass && x.Position == "Administrator"))
             {
                 return _Service.UpdateMenu(dto);
@@ -142,7 +142,7 @@ namespace ResturantManagement.Controllers
         {
             if ( await _context.Employes.AnyAsync(x => x.Email == email && x.Password == pass && x.Position == "Administrator"))
             {
-               await  _Service.DeleteMenu(Id);
+               await _Service.DeleteMenu(Id);
            }
             else
             {
@@ -160,13 +160,23 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>     
         [HttpGet]
         [Route("[action]")]
-        public async Task<List<OrderItemDto>> GetAllOrderItemAsync([FromHeader] string accessKey)
+        public async Task<List<OrderItemDTO>> GetAllOrderItemAsync([FromHeader] string accessKey)
         {
+            if (string.IsNullOrEmpty(accessKey))
+            {
+                Log.Information("Access Key not found");
+                  throw new Exception("Please Provide Your Access Key");
+
+            }
             if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
             x.AccesskeyExpireDate > DateTime.Now)){
             return await _Service1.GetAllOrderItemAsync();
             }
-            return null;
+            else
+            {
+                throw new Exception("you con not access Access Key");
+            }
+           
         }
         /// <summary>
         /// return the OrderItem by id
@@ -187,7 +197,21 @@ namespace ResturantManagement.Controllers
         [Route("[action]/{Id}")]
         public async Task<IActionResult> GetOrderItemById( int Id, [FromHeader] string accessKey)
         {
-            return Ok(await _Service1.GetOrderItemById(Id));
+            if (string.IsNullOrEmpty(accessKey))
+            {
+                Log.Information("Access Key not found");
+                return BadRequest("Please Provide Your Access Key");
+
+            }
+            if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
+            x.AccesskeyExpireDate > DateTime.Now))
+            {
+
+                return Ok(await _Service1.GetOrderItemById(Id));
+            }
+            else
+
+                return Unauthorized("you can not access Access Key");
         }
         /// <summary>
         /// Add data of OderItem
@@ -209,14 +233,18 @@ namespace ResturantManagement.Controllers
         /// 
         [HttpPost]
         [Route("[action]")]
-        public async Task CreateOrderItem([FromBody]OrderItemDto dto, [FromHeader] string accessKey)
+        public async Task CreateOrderItem([FromBody]OrderItemDTO dto, [FromHeader] string accessKey)
         {
             if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
                         x.AccesskeyExpireDate > DateTime.Now))
             {
               await _Service1.CreateOrderItem(dto);
             }
+            else
+            {
             throw new Exception("cannot add create order");
+
+            }
           
         }
        
@@ -237,7 +265,7 @@ namespace ResturantManagement.Controllers
         /// <response code="400">If the error was occured</response>    
         [HttpPut]
         [Route("[action]")]
-        public async Task UpdateOrderItem([FromBody]OrderItemDto dto, [FromHeader] string accessKey)
+        public async Task UpdateOrderItem([FromBody]OrderItemDTO dto, [FromHeader] string accessKey)
         {
             if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
                          x.AccesskeyExpireDate > DateTime.Now))

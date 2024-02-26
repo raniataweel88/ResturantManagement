@@ -31,7 +31,12 @@ namespace ResturantManagement_Infra.Repository
             Order or = new Order();
             try {    
                 or.TotalPrice = 0;
-            await _context.AddAsync(or);
+                or.CustomerId = o.CustomerId;
+                or.EmployeId = o.EmployeId;
+                or.TableId = o.TableId;
+
+
+                await _context.AddAsync(or);
             await _context.SaveChangesAsync();
             Log.Information("db query has been add new order Repository"); }
             catch (Exception ex)
@@ -70,6 +75,9 @@ namespace ResturantManagement_Infra.Repository
                          {
                              TotalPrice = o.TotalPrice,
                              OrderId = o.OrderId,
+                             CustomerId = o.CustomerId,
+                             EmployeId = o.EmployeId,
+                             TableId = o.TableId,
                          };
             Log.Information("Db query has been Get All Order Repository");  
                 return (result.ToList());}
@@ -85,13 +93,28 @@ namespace ResturantManagement_Infra.Repository
             Log.Debug("Debugging GetOrderById Repository has been started ");
             try
             {
-             var result = await _context.Orders.FindAsync(Id);
-            Log.Information($"Db Query has been get Order Id Repository");
-                return result;
+                var result = await _context.Orders.FindAsync(Id);
+                if (result != null)
+                {
+                    Order Order = new Order()
+                    {
+                        OrderId = result.OrderId,
+                        TotalPrice = result.TotalPrice,
+                        TableId = result.TableId,
+                        EmployeId = result.EmployeId,
+                    };
+                    Log.Information($"Db Query has been get Order Id Repository");
+                    return Order;
+                }
+                else
+                {
+                    throw new Exception("Db Query does not  have object of model Order");
+                }
+
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message + "Db Query does not  have object of model Order");
+                throw new Exception(ex.Message );
             }
             Log.Debug($"Debugging GetOrderItemById Repository Has been Finished Successfully With OrderId");
         }

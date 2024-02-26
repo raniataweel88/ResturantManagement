@@ -10,10 +10,10 @@ namespace ResturantManagement_Core.IService
 {
     public interface ITableService
     {
-        Task<List<TableDto>> GetAllTableAsync();
-        Task<TableDto> GetTableById(int Id);
-        Task CreateTable(TableDto dto);
-        Task UpdateTable(TableDto dto);
+        Task<List<TableDTO>> GetAllTableAsync();
+        Task<TableDTO> GetTableById(int Id);
+        Task CreateTable(TableDTO dto);
+        Task UpdateTable(TableDTO dto);
         Task DeleteTable(int Id);
     }
 }

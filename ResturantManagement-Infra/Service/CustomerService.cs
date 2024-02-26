@@ -59,6 +59,10 @@ namespace ResturantManagement_Infra.Service
                     Log.Information("Db Query deletes the customer Service successfully");
                     Log.Debug($"Debugging DeleteCustomer Service has been finished");
                 }
+                else
+                {
+                    throw new Exception("the customer not found");
+                }
 
             }
             catch (Exception ex)
@@ -71,16 +75,22 @@ namespace ResturantManagement_Infra.Service
         {
             Log.Debug("Debugging GetAllCustomerAsync Service has been started");
             var Customer = await _context.Customers.ToListAsync();
-            var result = from c in Customer
+            if(Customer != null) 
+            { 
+                var result = from c in Customer
                          select new CustomerDTO
                          {
                              Name = c.Name,
                              CustomerId = c.CustomerId,
                              Phone = c.Phone,
+                             Email = c.Email,
                          };
             Log.Information("Db query has been Get All Customers Service");
             Log.Debug("Debugging GetAllCustomerAsync Service has been finished");
             return (result.ToList());
+            }
+           else
+                throw new Exception("the customer not found");
         }
 
         public async Task<CustomerDTO> GetCustomerByIdAsync(int Id)
@@ -95,12 +105,13 @@ namespace ResturantManagement_Infra.Service
                         Name = result.Name,
                         Email = result.Email,
                         Phone = result.Phone,
+                        CustomerId= result.CustomerId,
                     };
                     Log.Information($"Db Query has been get customer Id Service");
                     return CustomerDTO;
                 }
                 else
-                    return null;
+                    return null; 
             }
             catch (Exception ex)
             {
@@ -122,14 +133,13 @@ namespace ResturantManagement_Infra.Service
                     result.Name = dto.Name;
                     result.Phone = dto.Phone;
                     result.Email = dto.Email;
-                    _context.Customers.Update(result);
+                    _context.Update(result);
                     await _context.SaveChangesAsync();
                     Log.Information($"Db has been updates Service");
                 }
                 else
                 {
-
-                    throw new Exception("the customer is null");
+                    throw new Exception("the customer not found");
                 }
             }
             catch (Exception ex)

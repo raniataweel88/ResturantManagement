@@ -27,53 +27,82 @@ namespace ResturantManagement_Infra.Service
         public async Task CreateEmploye(EmployeDTO dto)
         {
             Log.Debug("Debugging CreateEmploye Service has been started");
-            Employe e = new Employe(); 
-                e.Email = dto.Email;
-            e.Password = dto.Password;
-            e.Name = dto.Name;
-            e.Position = dto.Position;
-            await _context.AddAsync(e);
-            await _context.SaveChangesAsync();
-            Log.Information("db query has been add new Employe Service");
-            Log.Debug("Debugging CreateEmploye Service been finised");
-        }
-
-        public async Task DeleteEmploye(int Id)
-        {
-            Log.Debug($"Debugging DeleteEmploye Service has been started");
-            var result =await _context.Employes.FindAsync(Id);
-            if (result != null)
+            try
             {
-                Log.Information("Employe  Is Exist");
-                _context.Employes.Remove(result);
+                Employe e = new Employe();
+                e.Email = dto.Email;
+                e.Password = dto.Password;
+                e.Name = dto.Name;
+                e.Position = dto.Position;
+                await _context.AddAsync(e);
                 await _context.SaveChangesAsync();
-                Log.Information("Db Query deletes the item of Employe Service successfully");
-                Log.Debug($"Debugging DeleteEmploye Service has been finished");
+                Log.Information("db query has been add new Employe Service");
+                Log.Debug("Debugging CreateEmploye Service been finised");
             }
-            Log.Error("Employe Not Found");
+            catch (Exception ex)
+            {
+                throw new Exception("can not update Employe by id");
+            }
         }
 
-        public async Task<List<EmployeDTO>> GetAllEmployeAsync()
-        {
-            Log.Debug("Debugging GetAllEmployeAsync Service has been started");
-            var Employe = await _context.Employes.ToListAsync();
-            var result = from e in Employe
-                         select new EmployeDTO
-                         {
-                             Name = e.Name,
-                             EmployeId = e.EmployeId,
-                             Position = e.Position,
-                             Email = e.Email,
-                         };
-            Log.Information("Db query has been Get All Employe Service");
-            Log.Debug("Debugging GetAllEmployeAsync Service has been finised");
-            return (result.ToList());
-        }
-
+            public async Task DeleteEmploye(int Id)
+            {
+                Log.Debug($"Debugging DeleteEmploye Service has been started");
+                try
+                {
+                    var result = await _context.Employes.FindAsync(Id);
+                    if (result != null)
+                    {
+                        Log.Information("Employe  Is Exist");
+                        _context.Employes.Remove(result);
+                        await _context.SaveChangesAsync();
+                        Log.Information("Db Query deletes the item of Employe Service successfully");
+                        Log.Debug($"Debugging DeleteEmploye Service has been finished");
+                    }
+                    else
+                    {
+                        throw new Exception(" Employe not found");
+                        Log.Error("Employe Not Found");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("can not update Employe by id");
+                }
+            }
+            public async Task<List<EmployeDTO>> GetAllEmployeAsync()
+            {
+                try
+                {
+                    Log.Debug("Debugging GetAllEmployeAsync Service has been started");
+                    var Employe = await _context.Employes.ToListAsync();
+                    if (Employe != null)
+                    {
+                        var result = from e in Employe
+                                     select new EmployeDTO
+                                     {
+                                         Name = e.Name,
+                                         EmployeId = e.EmployeId,
+                                         Position = e.Position,
+                                         Email = e.Email,
+                                     };
+                        Log.Information("Db query has been Get All Employe Service");
+                        Log.Debug("Debugging GetAllEmployeAsync Service has been finised");
+                        return (result.ToList());
+                    }
+                    else
+                    {
+                        throw new Exception(" Employe not found");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("can not update Employe by id");
+                }
+            }
         public async Task<EmployeDTO> GetEmployeById(int Id)
-        {
-            Log.Debug("Debugging GetEmployeById Service has been started");
-
+        {               
+         Log.Debug("Debugging GetEmployeById Service has been started");
             try
             {
                 var result = await _context.Employes.FindAsync(Id);
@@ -84,35 +113,53 @@ namespace ResturantManagement_Infra.Service
                         Name = result.Name,
                         Email = result.Email,
                         Position = result.Position,
+                         EmployeId= result.EmployeId,
                     };
                     Log.Information($"Db Query has been get Employe Id Service");
                     return EmployeDTO;
                 }
                 else
-                    return null;
+                {
+                    throw new Exception("Employe not found");
+                }   
             }
             catch (Exception ex)
             {
                 throw new Exception("can not get Employe by id");
             }
-
             Log.Debug($"Debugging GetEmployeById Service Has been Finished Successfully With CustomerId");
         }
 
          
         public async Task UpdateEmploye(EmployeDTO dto)
         {
-            Log.Debug($"Debugging UpdateEmploy Service has been started");
-            var result = await _context.Employes.FindAsync(dto.EmployeId);
-            result.Name = dto.Name;
-            result.EmployeId = dto.EmployeId;
-            result.Position = dto.Position;
-            result.Email = dto.Email;
-            result.Password = dto.Password;
-            _context.Update(result);
-            await _context.SaveChangesAsync();
-            Log.Information($"Db has been updates Service");
-            Log.Debug($"Debugging UpdateEmploy Service has been Finshied"); ;
+            try
+            {
+                Log.Debug($"Debugging UpdateEmploy Service has been started");
+                var result = await _context.Employes.FindAsync(dto.EmployeId);
+                if (result != null)
+                {
+                    result.Name = dto.Name;
+                    result.EmployeId = dto.EmployeId;
+                    result.Position = dto.Position;
+                    result.Email = dto.Email;
+                    result.Password = dto.Password;
+                    _context.Update(result);
+                    await _context.SaveChangesAsync();
+                    Log.Information($"Db has been updates Service");
+                    Log.Debug($"Debugging UpdateEmploy Service has been Finshied");
+                }
+                else
+                {
+                    throw new Exception(" Employe not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("can not update Employe by id");
+            }
+
+
         }
     }
 }

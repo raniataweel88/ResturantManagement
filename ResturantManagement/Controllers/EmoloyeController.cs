@@ -67,13 +67,11 @@ namespace ResturantManagement.Controllers
             {
                 Log.Information("Access Key not found");
                 return StatusCode(400, new { Response = "Access Key not found"});
-
             }
             if (_context.Employes.Any(x => x.AccessKey == accessKey &&
             x.AccesskeyExpireDate > DateTime.Now))
-            {
-                var get = _Service.GetEmployeById(Id);
-                return Ok(get);
+            {  
+                return Ok(await _Service.GetEmployeById(Id));
             }
             else
             {
@@ -110,7 +108,7 @@ namespace ResturantManagement.Controllers
                 throw new Exception(ex.Message);
             }
         }
-     
+
         /// <summary>
         /// Update the data of Employe
         /// </summary>
@@ -124,8 +122,9 @@ namespace ResturantManagement.Controllers
         ///     }
         /// </remarks>
         /// <returns>Update Employe</returns>
-        /// <response code="201">Update the old data of Employe </response>
-        /// <response code="400">If the error was occured</response>    
+        /// <response code="200">Update the old data of Employe </response>
+        /// <response code="400">cannot found access key</response>    
+        /// <response code="500">If the error was occured</response> 
         [HttpPut]
         [Route("[action]")]
         public async Task<IActionResult> UpdateEmploye([FromBody]EmployeDTO e, [FromHeader] string accessKey)
@@ -139,13 +138,12 @@ namespace ResturantManagement.Controllers
             if (await _context.Employes.AnyAsync(x => x.AccessKey == accessKey &&
             x.AccesskeyExpireDate > DateTime.Now))
             {
-
-             var UpdateEmploye =  _Service.UpdateEmploye(e);
-                return Ok(UpdateEmploye);
+                await _Service.UpdateEmploye(e);
+                return Ok();
             }
             else
             {
-                return Unauthorized("Please Provide Your Access Key");
+                return Unauthorized("you can not Access Key");
             }
            
         }
@@ -161,9 +159,9 @@ namespace ResturantManagement.Controllers
         ///     }
         /// </remarks>
         /// <returns>DElET  Employe</returns>
-        /// <response code="201">DElET the  data of Employe </response>
-        /// <response code="400">If the error was occured</response>    
-
+        /// <response code="200">DElET the  data of Employe </response>
+        /// <response code="400">If the  Access Key not found"</response>    
+        /// <response code="500">If the error was occured</response> 
         [HttpDelete]
         [Route("[action]/{Id}")]
         public async Task<IActionResult> DeleteEmploye( int Id, [FromHeader] string accessKey)

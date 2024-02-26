@@ -26,25 +26,25 @@ namespace ResturantManagement_Infra.Service
         }
 
       #region OrderItmem
-        public async Task CreateOrderItem( OrderItemDto dto)
+        public async Task CreateOrderItem(OrderItemDTO dto)
         {
                 Log.Debug("Debugging Create Order Item Service has been started");
-                OrderItem o = new OrderItem() {
-                    OrderId = dto.OrderId,
-                  MenuId = dto.MenuId,
-                  Quantity = dto.Quantity,
-                 };
-                   
+            OrderItem o = new OrderItem();
+            o.OrderId = dto.OrderId;
+           o.MenuId = dto.MenuId;
+            o.Quantity = dto.Quantity;    
                 await _context.AddAsync(o);
                 await _context.SaveChangesAsync();
             Menu menu = new Menu();
                 Order or = new Order();
-                var result = await _context.Orders.FindAsync(or.OrderId.Equals(dto.OrderId));
-                if (result != null)
+                var result = await _context.Orders.FindAsync(dto.OrderId);
+            var prices = await _context.Menus.FindAsync(dto.MenuId);
+
+            if (result != null)
                 {
-                    or.TotalPrice+=menu.Price * o.Quantity;
+                    or.TotalPrice+= prices.Price * o.Quantity;
                     result.TotalPrice = or.TotalPrice;
-                    _context.Update(result);
+                    _context.Orders.Update(result);
                     await _context.SaveChangesAsync();
                 }
                 Log.Information("db query has been add new item Service");
@@ -68,13 +68,13 @@ namespace ResturantManagement_Infra.Service
            
             Log.Debug($"Debugging DeleteOrderItem Service has been finished");
             }
-        public async Task<List<OrderItemDto>> GetAllOrderItemAsync()
+        public async Task<List<OrderItemDTO>> GetAllOrderItemAsync()
         {
            
                 Log.Debug("Debugging GetAllOrderItemAsync Service has been started");
                 var OrderItem = await _context.OrderItems.ToListAsync();
                 var result = from o in OrderItem
-                             select new OrderItemDto
+                             select new OrderItemDTO
                              {
                                 OrderItemId = o.OrderId,
                                 MenuId = o.MenuId,
@@ -87,7 +87,7 @@ namespace ResturantManagement_Infra.Service
            
         }
 
-        public async Task<OrderItemDto> GetOrderItemById(int Id)
+        public async Task<OrderItemDTO> GetOrderItemById(int Id)
         {
             try { 
                 Log.Debug("Debugging GetOrderItemById Service has been started");
@@ -96,7 +96,7 @@ namespace ResturantManagement_Infra.Service
                 Log.Debug($"Debugging GetOrderItemById Service Has been Finished Successfully With OrderItemId");
             if (result != null)
             {
-                OrderItemDto OrderItemDt = new OrderItemDto()
+                OrderItemDTO OrderItemDt = new OrderItemDTO()
                 {
                     Quantity= result.Quantity,
                     OrderId = result.OrderId,
@@ -104,10 +104,13 @@ namespace ResturantManagement_Infra.Service
                     MenuId=result.MenuId,
                 };
                 Log.Information($"Db Query has been get orderitem Id Service");
-                return OrderItemDt;
+             return OrderItemDt;
             }
-            else
-                return null;
+                else
+                {
+                    return null;
+                }
+               
         } 
           catch(Exception ex)
             {
@@ -115,7 +118,7 @@ namespace ResturantManagement_Infra.Service
     }
 }
 
-        public async Task UpdateOrderItem(OrderItemDto dto)
+        public async Task UpdateOrderItem(OrderItemDTO dto)
         {
               Log.Debug($"Debugging UpdateOrderItem Service has been started");
                 var result = await _context.OrderItems.FindAsync(dto.OrderItemId);

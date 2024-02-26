@@ -10,10 +10,10 @@ namespace ResturantManagement_Core.IService
 {
     public interface IOrderService
     {
-        Task<List<OrderDto>> GetAllOrderAsync();
-        Task<OrderDto> GetOrderById(int Id);
-        Task CreateOrder(OrderDto dto);
-       public Task UpdateOrder(OrderDto dto);
+        Task<List<OrderDTO>> GetAllOrderAsync();
+        Task<OrderDTO> GetOrderById(int Id);
+        Task CreateOrder(OrderDTO dto);
+       public Task UpdateOrder(OrderDTO dto);
         Task DeleteOrder(int Id);
     }
 }

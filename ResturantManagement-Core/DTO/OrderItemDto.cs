@@ -8,11 +8,9 @@ using System.Threading.Tasks;
 
 namespace ResturantManagement_Core.DTO
 {
-    public class OrderItemDto
+    public class OrderItemDTO
     {
         public int OrderItemId { get; set; }
-        public Menu Menu { get; set; }
-        public Order Order { get; set; }
         public int Quantity { get; set; }
         public int OrderId { get; set; }
         public int MenuId { get; set; }

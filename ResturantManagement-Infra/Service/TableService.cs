@@ -26,7 +26,7 @@ namespace ResturantManagement_Infra.Service
             _context = context;
         }
         #region Table
-        public async Task CreateTable(TableDto dto)
+        public async Task CreateTable(TableDTO dto)
         {
             try { 
              Log.Debug("Debugging Create Table Service has been started");
@@ -46,28 +46,34 @@ namespace ResturantManagement_Infra.Service
         public async Task DeleteTable(int Id)
         {
             Log.Debug($"Debugging DeleteTable Service has been started");
-            var result = _context.Tables.FindAsync(Id);
-            if (result != null)
+            try
             {
-                Log.Information("Table Is Exist");
-                _context.Remove(result);
-                await _context.SaveChangesAsync();
-                Log.Information("Db Query deletes the Table Service successfully");
-                Log.Debug($"Debugging DeleteTable Service has been finished");
+                var result = await _context.Tables.FindAsync(Id);
+                if (result != null)
+                {
+                    Log.Information("Table Is Exist");
+                    _context.Tables.Remove(result);
+                    await _context.SaveChangesAsync();
+                    Log.Information("Db Query deletes the Table Service successfully");
+                    Log.Debug($"Debugging DeleteTable Service has been finished");
+                }
+                else
+                {     
+                    Log.Error("Table Not Found");
+                    throw new Exception("the table not found");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                throw new Exception("the table not found");
+                throw new Exception(ex.Message);
             }
-            Log.Error("Table Not Found");
         }
-
-        public async Task<List<TableDto>> GetAllTableAsync()
-        {
-            try {  Log.Debug("Debugging GetAllTableAsync Service has been started");
+            public async Task<List<TableDTO>> GetAllTableAsync()
+        {  Log.Debug("Debugging GetAllTableAsync Service has been started");
+            try {
             var Table = await _context.Tables.ToListAsync();
             var result = from t in Table
-                         select new TableDto
+                         select new TableDTO
                          {
                              TableId = t.TableId,
                              TableNumber = t.TableNumber,
@@ -81,7 +87,7 @@ namespace ResturantManagement_Infra.Service
                 throw new Exception(ex.Message);
              }
 }
-        public async Task<TableDto> GetTableById(int Id)
+        public async Task<TableDTO> GetTableById(int Id)
         {
             try
             {
@@ -90,7 +96,7 @@ namespace ResturantManagement_Infra.Service
             var result = await _context.Tables.FindAsync(Id);
                 if (result != null)
                 { 
-                    TableDto table = new TableDto()
+                    TableDTO table = new TableDTO()
                     {
                         TableId = result.TableId,
                         TableNumber = result.TableNumber,
@@ -113,7 +119,7 @@ namespace ResturantManagement_Infra.Service
             }
            
         }
-        public async Task UpdateTable(TableDto dto)
+        public async Task UpdateTable(TableDTO dto)
         {
             try {    
             Log.Debug($"Debugging UpdateTable Service has been started");

@@ -140,7 +140,7 @@ namespace ResturantManagement.Controllers
         ///     }
         /// </remarks>
         /// <returns>Update Customer</returns>
-        /// <response code="201">Update the old data of Customer </response>
+        /// <response code="200">Update the old data of Customer </response>
         /// <response code="400">If the error was occured</response>    
         [HttpPut]
         [Route("[action]")]
@@ -157,8 +157,7 @@ namespace ResturantManagement.Controllers
                     x.AccesskeyExpireDate > DateTime.Now) || (await _context.Customers.AnyAsync(x => x.AccessKey == accessKey &&
                     x.AccesskeyExpireDate > DateTime.Now)))
                     {
-
-                      _Service.UpdateCustomer(dto);
+                    await  _Service.UpdateCustomer(dto);
                 }
                   
                 }
