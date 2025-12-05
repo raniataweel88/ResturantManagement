@@ -28,6 +28,7 @@ The project follows **Clean Architecture** to ensure scalability and maintainabi
 
 
 ├── Core
+
 │   ├── Entities 
 
 │   ├── Interfaces 
@@ -36,6 +37,7 @@ The project follows **Clean Architecture** to ensure scalability and maintainabi
 
 │
 ├── Infrastructure 
+
 │   ├── Data 
 
 │   ├── Repositories 
@@ -43,6 +45,7 @@ The project follows **Clean Architecture** to ensure scalability and maintainabi
 │   └── Migrations
 
 ├── API
+
 │   ├── Controllers 
 
 │   ├── Extensions 
