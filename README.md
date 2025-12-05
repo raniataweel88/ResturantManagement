@@ -28,29 +28,19 @@ The project follows **Clean Architecture** to ensure scalability and maintainabi
 
 
 ├── Core
-│   ├── Entities
-
-│   ├── Interfaces
-
-│   ├── DTOs
-
+│   ├── Entities 
+│   ├── Interfaces 
+│   ├── DTOs 
 │
-├── Infrastructure
-
-│   ├── Data
-
-│   ├── Repositories
-
+├── Infrastructure 
+│   ├── Data 
+│   ├── Repositories 
 │   └── Migrations
-│
-
+│ 
 ├── API
-
-│   ├── Controllers
-
-│   ├── Extensions
-
-│   └── appsettings.json
+│   ├── Controllers 
+│   ├── Extensions 
+│   └── appsettings.json 
 
 
 
